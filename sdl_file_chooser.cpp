@@ -24,6 +24,8 @@ void FileChooser::getFileList(std::string directory)
     
     for (auto &file : files)
         fileList.push_back(file.path().c_str());
+    
+    std::sort(fileList.begin(), fileList.end());
 }
 
 void FileChooser::drawTitle()
