@@ -31,8 +31,10 @@ long_line_column=80
 current_page=0
 FILE_NAME_0=167;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmike%2Fprojects%2Fchip-8_emulator%2Fmain.cpp;0;4
 FILE_NAME_1=2695;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmike%2Fprojects%2Fchip-8_emulator%2FChip-8.h;0;4
-FILE_NAME_2=4469;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmike%2Fprojects%2Fchip-8_emulator%2FChip-8.cpp;0;4
+FILE_NAME_2=19212;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmike%2Fprojects%2Fchip-8_emulator%2FChip-8.cpp;0;4
 FILE_NAME_3=240;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmike%2Fprojects%2Fchip-8_emulator%2Ffontset.h;0;4
+FILE_NAME_4=3826;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmike%2Fprojects%2Fchip-8_emulator%2Fsdl_file_chooser.cpp;0;4
+FILE_NAME_5=1289;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmike%2Fprojects%2Fchip-8_emulator%2Fsdl_file_chooser.h;0;4
 
 [VTE]
 last_dir=/home/mike/projects/sdl_test
