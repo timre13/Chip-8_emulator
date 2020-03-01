@@ -48,7 +48,6 @@ private:
 
 public:
     FileChooser(std::string directory);
-    ~FileChooser();
     
     std::string get();
 };

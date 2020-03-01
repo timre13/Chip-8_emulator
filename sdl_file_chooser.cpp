@@ -158,8 +158,3 @@ void FileChooser::deinit()
     TTF_Quit();
     SDL_Quit();
 }
-
-FileChooser::~FileChooser()
-{
-    deinit();
-}
