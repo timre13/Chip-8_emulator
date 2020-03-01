@@ -9,11 +9,13 @@
 extern constexpr double FPS{60};
 
 #include "Chip-8.h"
+#include "sdl_file_chooser.h"
 
-std::vector<std::string> ROMs{};
+//std::vector<std::string> ROMs{};
 
 int main()
 {
+    /*
     //--- ROM selector ---
     
     for (const auto &entry : std::filesystem::directory_iterator("./roms"))
@@ -31,6 +33,14 @@ int main()
     ss1 >> romIndex;
     
     // -------------------
+    */
+    
+    FileChooser fileChooser{"./roms"};
+    std::string romFilename{fileChooser.get()};
+    
+    // If the user canceled the file selection, quit.
+    if (romFilename.size() == 0)
+        return 0;
     
     // --- speed selector ---
 
@@ -43,7 +53,7 @@ int main()
     
     // ----------------------
 
-    Chip8 chip8{ROMs[romIndex]};
+    Chip8 chip8{romFilename};
     
     std::srand(std::time(nullptr));
     

@@ -184,7 +184,7 @@ void Chip8::deinit()
     
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    
+       
     SDL_Quit();
 }
 
