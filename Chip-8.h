@@ -10,6 +10,9 @@
 
 #define TITLE "CHIP-8 Emulator"
 
+extern bool storeBitShiftResultInY;
+extern bool incrementIAfterMemoryOperation;
+
 class Registers
 {
 private:

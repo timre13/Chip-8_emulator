@@ -293,6 +293,8 @@ void Chip8::emulateCycle()
             {
                 case 0x0000:
                     std::cout << "NOP" << std::endl;
+                    break;
+                    
                 case 0x00E0: // CLS
                     std::cout << "CLS" << std::endl;
                     for (int i{}; i < 64*32; ++i)
@@ -393,7 +395,10 @@ void Chip8::emulateCycle()
                 case 6: // SHR Vx {, Vy}
                     std::cout << "SHR Vx {, Vy}" << std::endl;
                     registers[0xF] = ((registers[(opcode & 0x0F00)>>8]) & 1);
-                    registers[(opcode & 0x0F00)>>8] >>= 1;
+                    if (storeBitShiftResultInY)
+                        registers[(opcode & 0x00F0)>>4] = (registers[(opcode & 0x0F00)>>8] >> 1);
+                    else
+                        registers[(opcode & 0x0F00)>>8] >>= 1;
                     break;
                 
                 case 7: // SUBN Vx, Vy
@@ -405,7 +410,10 @@ void Chip8::emulateCycle()
                 case 0xE: // SHL Vx {, Vy}
                     std::cout << "SDL Vx, {, Vy}" << std::endl;
                     registers[0xF] = (registers[((opcode & 0x0F00)>>8)] >> 7);
-                    registers[(opcode & 0x0F00)>>8] <<= 1;
+                    if (storeBitShiftResultInY)
+                        registers[(opcode & 0x00F0)>>4] = (registers[(opcode & 0x0F00)>>8] << 1);
+                    else
+                        registers[(opcode & 0x0F00)>>8] <<= 1;
                     break;
                 
                 default:
@@ -605,8 +613,9 @@ void Chip8::emulateCycle()
                         
                     for (uint8_t i{}; i <= x; ++i)
                         memory[I + i] = registers[i];
-                        
-                    //I += (x + 1);
+                    
+                    if (incrementIAfterMemoryOperation)
+                        I += (x + 1);
                     break;
                 }
                 
@@ -618,7 +627,8 @@ void Chip8::emulateCycle()
                     for (uint8_t i{}; i <= x; ++i)
                         registers[i] = memory[I + i];
                     
-                    //I += (x + 1);
+                    if (incrementIAfterMemoryOperation)
+                        I += (x + 1);
                     break;
                 }
                 

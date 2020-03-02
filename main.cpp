@@ -6,7 +6,22 @@
 #include <filesystem>
 #include <algorithm>
 
-extern constexpr double FPS{60};
+constexpr double FPS{60};
+
+//------------------------------------------------------------------------------
+
+// This switch marks whether the result of the bit
+// shifts (8XY6 and 0x8XYE instructions) should be stored in Y or in X.
+// The original implementation stored the result in Y;
+bool storeBitShiftResultInY{true};c
+
+// This variable marks whether the I (index register) should be
+// incremented after reading from or writing
+// to memory (FX55 and FX65 instructions).
+// In the original implementation this does happen.
+bool incrementIAfterMemoryOperation{true};
+
+//------------------------------------------------------------------------------
 
 #include "Chip-8.h"
 #include "sdl_file_chooser.h"
