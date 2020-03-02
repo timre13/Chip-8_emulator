@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cassert>
 #include <random>
+#include <ctime>
 
 #include "Chip-8.h"
 #include "fontset.h"
@@ -48,6 +49,10 @@ constexpr uint8_t keyMapScancode[16]{
 
 Chip8::Chip8(const std::string &romFilename)
 {
+    
+    std::srand(std::time(nullptr));
+    std::rand();
+    
     std::cout << '\n' << "----- setting up video -----" << std::endl;
     Chip8::initVideo();
     Chip8::loadFontSet();
@@ -426,7 +431,7 @@ void Chip8::emulateCycle()
             std::cout << "SNE Vx, Vy" << std::endl;
             if (registers[(opcode & 0x0F00)>>8] !=
                 registers[(opcode & 0x00F0)>>4])
-            pc += 2;
+                pc += 2;
             break;
         
         case 0xA000: // LD I, addr
@@ -441,7 +446,7 @@ void Chip8::emulateCycle()
         
         case 0xC000: // RND Vx, byte
             std::cout << "RND Vx, byte" << std::endl;
-            registers[(opcode & 0x0F00)>>8] &= (static_cast<uint8_t>(std::rand()));
+            registers[(opcode & 0x0F00)>>8] = ((opcode & 0x00FF) & static_cast<uint8_t>(std::rand()));
             break;
         
         case 0xD000: // DRW Vx, Vy, nibble
@@ -519,7 +524,7 @@ void Chip8::emulateCycle()
             {
                 case 0x07: // LD Vx, DT
                     std::cout << "LD Vx, DT" << std::endl;
-                    registers[0xF] = delayTimer;
+                    registers[(opcode & 0x0F00)>>8] = delayTimer;
                     break;
                 
                 case 0x0A: // LD Vx, K
@@ -600,8 +605,7 @@ void Chip8::emulateCycle()
                     std::cout << "LD B, Vx" << std::endl;
                     uint8_t number{registers[(opcode & 0x0F00)>>8]};
                     memory[I] = (number / 100);
-                    number -= ((number / 100) * 100);
-                    memory[I+1] = (number / 10);
+                    memory[I+1] = ((number / 10) % 10);
                     memory[I+2] = (number % 10);
                     break;
                 }

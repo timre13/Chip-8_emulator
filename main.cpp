@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <random>
-#include <ctime>
 #include <filesystem>
 #include <algorithm>
 
@@ -13,7 +12,7 @@ constexpr double FPS{60};
 // This switch marks whether the result of the bit
 // shifts (8XY6 and 0x8XYE instructions) should be stored in Y or in X.
 // The original implementation stored the result in Y;
-bool storeBitShiftResultInY{true};c
+bool storeBitShiftResultInY{true};
 
 // This variable marks whether the I (index register) should be
 // incremented after reading from or writing
@@ -69,8 +68,6 @@ int main()
     // ----------------------
 
     Chip8 chip8{romFilename};
-    
-    std::srand(std::time(nullptr));
     
     std::cout << std::hex;
     
