@@ -38,12 +38,13 @@ private:
     SDL_Renderer *renderer;
     TTF_Font *font;
     
-    double chosenFileI{};
+    int chosenFileI{};
 
     void getFileList(std::string directory);
     
     void drawFileList();
     void drawTitle();
+    void drawLoadingText();
 
     void deinit();
 

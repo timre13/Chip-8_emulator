@@ -20,10 +20,13 @@
 
 void FileChooser::getFileList(std::string directory)
 {
-    auto files{std::filesystem::directory_iterator{directory}};
+    auto files{std::filesystem::recursive_directory_iterator{directory}};
     
     for (auto &file : files)
-        fileList.push_back(file.path().c_str());
+    {
+        if (std::filesystem::is_regular_file(file))
+            fileList.push_back(file.path().c_str());
+    }
     
     std::sort(fileList.begin(), fileList.end());
 }
@@ -43,14 +46,29 @@ void FileChooser::drawTitle()
     SDL_FreeSurface(textSurface);
 }
 
+void FileChooser::drawLoadingText()
+{
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, "Loading...", {255, 255, 255, 255});
+    
+    SDL_Rect sourceRect{0, 0, textSurface->w,        textSurface->h};
+    SDL_Rect targetRect{10, 10, textSurface->w / 3,    textSurface->h / 3};
+    
+    SDL_Texture* textTexture{SDL_CreateTextureFromSurface(renderer, textSurface)};
+    
+    SDL_RenderCopy(renderer, textTexture, &sourceRect, &targetRect);
+    
+    SDL_DestroyTexture(textTexture);
+    SDL_FreeSurface(textSurface);
+}
+
 void FileChooser::drawFileList()
 {
     for (int i{}; i < static_cast<int>(fileList.size()); ++i)
     {
-        SDL_Surface *textSurface = TTF_RenderText_Solid(font, fileList[i].c_str(), {255, 255, 255, 255});
+        SDL_Surface *textSurface = TTF_RenderText_Blended(font, fileList[i].c_str(), {255, 255, 255, 200});
         
         SDL_Rect sourceRect{0, 0, textSurface->w,        textSurface->h};
-        SDL_Rect targetRect{0, 50+i*30, textSurface->w / 5,    textSurface->h / 5};
+        SDL_Rect targetRect{0, 500-chosenFileI*30+i*30, textSurface->w / 5,    textSurface->h / 5};
         
         SDL_Texture* textTexture{SDL_CreateTextureFromSurface(renderer, textSurface)};
         
@@ -80,6 +98,9 @@ FileChooser::FileChooser(std::string directory)
         std::exit(2);
     }
 
+    drawLoadingText();
+    SDL_RenderPresent(renderer);
+
     bool isRunning{true};
     while (isRunning)
     {
@@ -103,14 +124,14 @@ FileChooser::FileChooser(std::string directory)
                         break;
                     
                     case SDLK_DOWN:
-                        chosenFileI += 0.4;
+                        chosenFileI += 1;
                         
-                        if (chosenFileI > fileList.size()-1)
+                        if (chosenFileI > static_cast<int>(fileList.size())-1)
                             chosenFileI = fileList.size()-1;
                         break;
                     
                     case SDLK_UP:
-                        chosenFileI -= 0.4;
+                        chosenFileI -= 1;
                         
                         if (chosenFileI < 0)
                             chosenFileI = 0;
@@ -128,7 +149,7 @@ FileChooser::FileChooser(std::string directory)
         SDL_RenderClear(renderer);
         
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 100);
-        SDL_Rect selectorRect{0, 50+static_cast<int>(chosenFileI)*30, 800, 25};
+        SDL_Rect selectorRect{0, 500, 800, 25};
         SDL_RenderFillRect(renderer, &selectorRect);
         
         drawTitle();
