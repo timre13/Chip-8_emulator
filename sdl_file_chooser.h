@@ -43,8 +43,8 @@ private:
     void getFileList(std::string directory);
     
     void drawFileList();
-    void drawTitle();
-    void drawLoadingText();
+    void drawTitle(const std::string &title);
+    void drawSelector();
 
     void deinit();
 
