@@ -24,6 +24,7 @@ bool incrementIAfterMemoryOperation{true};
 
 #include "Chip-8.h"
 #include "sdl_file_chooser.h"
+#include "DoubleAsker.h"
 
 //std::vector<std::string> ROMs{};
 
@@ -55,9 +56,10 @@ int main()
     // If the user canceled the file selection, quit.
     if (romFilename.size() == 0)
         return 0;
-    
+        
+    /*
     // --- speed selector ---
-
+    
     std::cout << "Emulation speed  (default: 1.0): ";
     double emulationSpeed{1.0};
     std::string emulationSpeedStr{};
@@ -66,6 +68,17 @@ int main()
         emulationSpeed = stod(emulationSpeedStr);
     
     // ----------------------
+    */
+    
+    DoubleAsker doubleAskerDialog;
+    double emulationSpeed{doubleAskerDialog.get()};
+    
+    // If the user canceled the entering of the emulation speed, quit.
+    if (emulationSpeed <= 0)
+        return 0;
+
+    std::cout << "Filename: " << romFilename << std::endl;
+    std::cout << "Emulation speed: " << emulationSpeed << std::endl;
 
     Chip8 chip8{romFilename};
     
