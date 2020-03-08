@@ -129,8 +129,6 @@ void DoubleAsker::drawEnteredValue()
 
 double DoubleAsker::get()
 {
-    //std::cout << "Entered string: " << enteredValue << std::endl;
-    
     std::stringstream ss{enteredValue};
     
     double value;
@@ -140,8 +138,6 @@ double DoubleAsker::get()
     // If the user left the default value
     if (enteredValue.size() == 0)
         value = 1;
-    
-    //std::cout << "Entered value: " << value << std::endl;
     
     return value;
 }

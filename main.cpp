@@ -5,8 +5,6 @@
 #include <filesystem>
 #include <algorithm>
 
-constexpr double FPS{60};
-
 //------------------------------------------------------------------------------
 
 // This switch marks whether the result of the bit
@@ -26,49 +24,14 @@ bool incrementIAfterMemoryOperation{true};
 #include "sdl_file_chooser.h"
 #include "DoubleAsker.h"
 
-//std::vector<std::string> ROMs{};
-
 int main()
 {
-    /*
-    //--- ROM selector ---
-    
-    for (const auto &entry : std::filesystem::directory_iterator("./roms"))
-        ROMs.push_back(entry.path());
-    std::sort(ROMs.begin(), ROMs.end());
-    
-    for (size_t i{}; i < ROMs.size(); ++i)
-        std::cout << i << ": " << ROMs[i] << '\n';
-    
-    size_t romIndex{ROMs.size()-1};
-    std::cout << "Enter the number of the ROM to load (default: " <<  romIndex << "): ";
-    std::string romIndexStr;
-    std::getline(std::cin, romIndexStr);
-    std::stringstream ss1{romIndexStr};
-    ss1 >> romIndex;
-    
-    // -------------------
-    */
-    
     FileChooser fileChooser{"./roms"};
     std::string romFilename{fileChooser.get()};
     
     // If the user canceled the file selection, quit.
     if (romFilename.size() == 0)
         return 0;
-        
-    /*
-    // --- speed selector ---
-    
-    std::cout << "Emulation speed  (default: 1.0): ";
-    double emulationSpeed{1.0};
-    std::string emulationSpeedStr{};
-    std::getline(std::cin, emulationSpeedStr);
-    if (emulationSpeedStr.size())
-        emulationSpeed = stod(emulationSpeedStr);
-    
-    // ----------------------
-    */
     
     DoubleAsker doubleAskerDialog;
     double emulationSpeed{doubleAskerDialog.get()};
@@ -84,7 +47,7 @@ int main()
     
     std::cout << std::hex;
     
-    const double frameDelay{1.0/FPS*100/emulationSpeed};
+    const double frameDelay{1.0/60*100/emulationSpeed};
     
     bool isRunning{true};
     while (isRunning && !chip8.hasEnded)
@@ -117,8 +80,5 @@ int main()
             chip8.updateRenderer();
         
         SDL_Delay(frameDelay);
-        
-        //std::string t;
-        //std::getline(std::cin, t);
     }
 }

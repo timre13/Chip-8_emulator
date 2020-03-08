@@ -61,9 +61,7 @@ Chip8::Chip8(const std::string &romFilename)
 }
 
 void Chip8::loadFile(std::string romFilename)
-{    
-    //romFilename = std::string("./roms/") + romFilename;
-    
+{
     std::cout << "Memory size: " << sizeof(memory) / sizeof(memory[0]) << std::endl;
     
     std::cout << "Opening file: " << romFilename << std::endl;
@@ -231,8 +229,6 @@ void Chip8::renderFrameBuffer()
     renderFlag = false;
     
     std::cout << "Frame rendered" << std::endl;
-    
-    //frameBuffer.print();
 }
 
 void Chip8::updateRenderer()
@@ -644,7 +640,6 @@ void Chip8::emulateCycle()
             
         default:
             std::cout << "Unknown opcode: " << opcode << std::endl;
-            //hasEnded = true;
             break;
     }
     

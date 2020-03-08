@@ -28,12 +28,6 @@ public:
         
         return m_registers[index];
     }
-    /*
-    uint8_t& operator[](uint16_t index)
-    {
-        return operator[](static_cast<int>(index));
-    }
-    * */
 };
 
 class Framebuffer
@@ -42,10 +36,7 @@ public:
     int m_frameBuffer[64*32]{};
     
     Framebuffer()
-    {
-        //for (int i{}; i < 32; ++i)
-         //   m_frameBuffer[i] = 0xFFFFFFFFFFFFFFFF;
-    }
+    {}
 
     int& operator[](int index)
     {
@@ -64,7 +55,7 @@ public:
         if (index >= 64*32)
         {
             isOutOfBounds = true;
-            std::cout << "Frame buffer index bigger or equal than 64*32" << std::endl;
+            std::cout << "Frame buffer index out of bounds" << std::endl;
         }
         
         if (isOutOfBounds)
