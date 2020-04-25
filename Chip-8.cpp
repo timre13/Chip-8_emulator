@@ -202,7 +202,7 @@ Chip8::~Chip8()
 
 void Chip8::renderFrameBuffer()
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
     SDL_RenderClear(renderer);
     
     for (int y{}; y < 32; ++y)
@@ -211,15 +211,14 @@ void Chip8::renderFrameBuffer()
         int currentPixelI{y*64+x};
         if (frameBuffer[currentPixelI])
         {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_SetRenderDrawColor(renderer, fgColorR, fgColorG, fgColorb, 255);
             
             SDL_Rect rect{(x)*20, (y)*20, 20, 20};
             SDL_RenderFillRect(renderer, &rect);
         }
         else
         {
-            //SDL_SetRenderDrawColor(renderer, 20, 180, 180, 255);
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
             
             SDL_Rect rect{(x)*20, (y)*20, 20, 20};
             SDL_RenderFillRect(renderer, &rect);
@@ -291,7 +290,7 @@ void Chip8::setPaused()
 	SDL_GetRenderDrawBlendMode(renderer, &originalBlendmode);
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
+	SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 150);
 
 	SDL_RenderFillRect(renderer, &rect);
 

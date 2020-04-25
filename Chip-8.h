@@ -13,6 +13,15 @@
 extern bool storeBitShiftResultInY;
 extern bool incrementIAfterMemoryOperation;
 
+extern uint8_t bgColorR;
+extern uint8_t bgColorG;
+extern uint8_t bgColorB;
+
+extern uint8_t fgColorR;
+extern uint8_t fgColorG;
+extern uint8_t fgColorb;
+
+
 class Registers
 {
 private:
