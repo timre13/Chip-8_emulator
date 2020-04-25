@@ -1,0 +1,10 @@
+main.o: ../main.cpp ../Chip-8.h ../sdl_file_chooser.h \
+ /usr/include/SDL2/SDL_ttf.h ../DoubleAsker.h
+
+../Chip-8.h:
+
+../sdl_file_chooser.h:
+
+/usr/include/SDL2/SDL_ttf.h:
+
+../DoubleAsker.h:
