@@ -302,9 +302,9 @@ void Chip8::setPaused()
 
 void Chip8::emulateCycle()
 {
-    setDebugTitle();
-    
     fetchOpcode();
+
+    setDebugTitle();
     
     std::cout << std::hex;
     

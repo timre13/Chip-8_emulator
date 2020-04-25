@@ -51,6 +51,7 @@ int main()
     
     bool isRunning{true};
     bool isPaused{false};
+    bool wasPaused{false};
     while (isRunning && !chip8.hasEnded)
     {
         SDL_Event event;
@@ -79,6 +80,8 @@ int main()
         
         if (isPaused)
         {
+        	wasPaused = true;
+
         	chip8.renderFrameBuffer();
 
         	chip8.setPaused();
@@ -88,6 +91,12 @@ int main()
         	SDL_Delay(frameDelay*500);
 
         	continue;
+        }
+
+        if (wasPaused)
+        {
+        	chip8.renderFrameBuffer();
+        	wasPaused = false;
         }
 
         chip8.emulateCycle();
