@@ -122,14 +122,14 @@ FileChooser::FileChooser(std::string directory)
         SDL_Event event;
         
         SDL_PollEvent(&event);
-        
+
         switch (event.type)
         {
             case SDL_QUIT:
                 chosenFileI = -1;
                 isRunning = false;
                 break;
-                
+
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym)
                 {
@@ -137,21 +137,21 @@ FileChooser::FileChooser(std::string directory)
                         chosenFileI = -1;
                         isRunning = false;
                         break;
-                    
+
                     case SDLK_DOWN:
                         chosenFileI += 1;
-                        
+
                         if (chosenFileI > static_cast<int>(fileList.size())-1)
                             chosenFileI = fileList.size()-1;
                         break;
-                    
+
                     case SDLK_UP:
                         chosenFileI -= 1;
-                        
+
                         if (chosenFileI < 0)
                             chosenFileI = 0;
                         break;
-                    
+
                     case SDLK_RETURN:
                         isRunning = false;
                         deinit();

@@ -50,28 +50,47 @@ int main()
     const double frameDelay{1.0/60*100/emulationSpeed};
     
     bool isRunning{true};
+    bool isPaused{false};
     while (isRunning && !chip8.hasEnded)
     {
         SDL_Event event;
-    
-        SDL_PollEvent(&event);
-        
-        switch (event.type)
+
+        while (SDL_PollEvent(&event))
         {
-            case SDL_QUIT:
-                isRunning = false;
-                break;
-            
-            case SDL_KEYDOWN:
-                switch(event.key.keysym.sym)
-                {
-                    case SDLK_ESCAPE:
-                        isRunning = false;
-                        break;
-                }
-                break;
+
+			switch (event.type)
+			{
+				case SDL_QUIT:
+					isRunning = false;
+					break;
+
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.sym)
+					{
+						case SDLK_ESCAPE:
+							isPaused = !isPaused;
+							break;
+						case SDLK_F12:
+							isRunning = false;
+							break;
+					}
+					break;
+			}
         }
         
+        if (isPaused)
+        {
+        	chip8.renderFrameBuffer();
+
+        	chip8.setPaused();
+
+        	chip8.updateRenderer();
+
+        	SDL_Delay(frameDelay*500);
+
+        	continue;
+        }
+
         chip8.emulateCycle();
         
         if (chip8.renderFlag)

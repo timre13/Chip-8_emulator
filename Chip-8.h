@@ -107,7 +107,7 @@ private:
 
     SDL_Window *window{nullptr};
     SDL_Renderer *renderer{nullptr};
-    
+
     
     void loadFile(std::string romFilename);
     void loadFontSet();
@@ -127,6 +127,7 @@ public:
     void updateRenderer();
     
     void setDebugTitle();
+    void setPaused();
     
     bool hasEnded{false}; // marks whether the program ended
     // Marks whether we need to redraw the framebuffer

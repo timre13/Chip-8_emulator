@@ -279,6 +279,27 @@ void Chip8::setDebugTitle()
         ).c_str());
 }
 
+void Chip8::setPaused()
+{
+	SDL_SetWindowTitle(window, (std::string(TITLE)+" - [PAUSED]").c_str());
+
+	SDL_Rect rect{0, 0, 64*20, 32*20};
+
+	SDL_BlendMode originalBlendmode{};
+	SDL_GetRenderDrawBlendMode(renderer, &originalBlendmode);
+
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
+
+	SDL_RenderFillRect(renderer, &rect);
+
+	SDL_RenderPresent(renderer);
+
+	SDL_SetRenderDrawBlendMode(renderer, originalBlendmode);
+
+}
+
 void Chip8::emulateCycle()
 {
     setDebugTitle();
