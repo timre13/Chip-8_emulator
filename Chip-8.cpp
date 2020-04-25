@@ -148,7 +148,11 @@ void Chip8::initVideo()
 {
     std::cout << "Initializing SDL" << std::endl;
     
-    SDL_Init(SDL_INIT_VIDEO);
+    if (SDL_Init(SDL_INIT_VIDEO))
+    {
+    	std::cerr << "Unable to initialize SDL. " << SDL_GetError() << '\n';
+    	std::exit(2);
+    }
     
     std::cout << "Creating window" << std::endl;
     
@@ -201,13 +205,11 @@ void Chip8::renderFrameBuffer()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    
     for (int y{}; y < 32; ++y)
     for (int x{}; x < 64; ++x)
     {
         int currentPixelI{y*64+x};
-        if ((frameBuffer[currentPixelI]))
+        if (frameBuffer[currentPixelI])
         {
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             
@@ -216,7 +218,7 @@ void Chip8::renderFrameBuffer()
         }
         else
         {
-            SDL_SetRenderDrawColor(renderer, 20, 180, 180, 255);
+            //SDL_SetRenderDrawColor(renderer, 20, 180, 180, 255);
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             
             SDL_Rect rect{(x)*20, (y)*20, 20, 20};
@@ -287,7 +289,6 @@ void Chip8::setPaused()
 
 	SDL_BlendMode originalBlendmode{};
 	SDL_GetRenderDrawBlendMode(renderer, &originalBlendmode);
-
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
@@ -297,7 +298,6 @@ void Chip8::setPaused()
 	SDL_RenderPresent(renderer);
 
 	SDL_SetRenderDrawBlendMode(renderer, originalBlendmode);
-
 }
 
 void Chip8::emulateCycle()
@@ -568,10 +568,11 @@ void Chip8::emulateCycle()
                         {
                             for (uint16_t i{}; i < 16; ++i)
                             {
-                                if (event.key.keysym.sym == SDLK_ESCAPE)
+                                if (event.key.keysym.sym == SDLK_F12)
                                 {
-                                    hasEnded = true;
-                                    hasValidKeyPressed = true;
+                                	hasEnded = true;
+                                	hasValidKeyPressed = true;
+                                	break;
                                 }
                                 
                                 auto value{keyMap[i]};
