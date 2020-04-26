@@ -136,4 +136,6 @@ int main()
         
         SDL_Delay(frameDelay);
     }
+
+    chip8.deinit();
 }

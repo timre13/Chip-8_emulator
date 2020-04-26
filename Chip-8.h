@@ -119,12 +119,12 @@ private:
 
     double scale{1.0};
 
+    bool hasDeinitCalled{false};
+
     
     void loadFile(std::string romFilename);
     void loadFontSet();
     void initVideo();
-    
-    void deinit();
     
     void fetchOpcode();
     
@@ -132,6 +132,8 @@ public:
     Chip8(const std::string &romFilename);
     ~Chip8();
     
+    void deinit();
+
     void emulateCycle();
     void renderFrameBuffer();
     

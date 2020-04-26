@@ -189,12 +189,17 @@ void Chip8::initVideo()
 
 void Chip8::deinit()
 {
+    if (hasDeinitCalled)
+        return;
+
     std::cout << '\n' << "----- deinit -----" << std::endl;
     
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
        
     SDL_Quit();
+
+    hasDeinitCalled = true;
 }
 
 Chip8::~Chip8()
