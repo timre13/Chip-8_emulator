@@ -85,9 +85,27 @@ int main()
 							break;
 					}
 					break;
+
+				case SDL_WINDOWEVENT:
+					if (event.window.windowID == chip8.getWindowID())
+					{
+						switch (event.window.event)
+						{
+						case SDL_WINDOWEVENT_RESIZED:
+							chip8.whenWindowResized(event.window.data1, event.window.data2);
+							continue;
+							break;
+
+						case SDL_WINDOWEVENT_CLOSE:
+							isRunning = false;
+							continue;
+							break;
+						}
+					}
+					break;
 			}
         }
-        
+
         if (isPaused)
         {
         	wasPaused = true;

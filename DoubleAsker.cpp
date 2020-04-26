@@ -80,6 +80,9 @@ void DoubleAsker::init()
             break;
         }
         
+        if (!isRunning)
+        	break;
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
@@ -139,6 +142,8 @@ double DoubleAsker::get()
     if (enteredValue.size() == 0)
         value = 1;
     
+    deinit();
+
     return value;
 }
 

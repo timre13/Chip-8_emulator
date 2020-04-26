@@ -117,6 +117,8 @@ private:
     SDL_Window *window{nullptr};
     SDL_Renderer *renderer{nullptr};
 
+    double scale{1.0};
+
     
     void loadFile(std::string romFilename);
     void loadFontSet();
@@ -138,6 +140,10 @@ public:
     void setDebugTitle();
     void setPaused();
     
+    void whenWindowResized(int width, int height);
+
+    uint32_t getWindowID();
+
     bool hasEnded{false}; // marks whether the program ended
     // Marks whether we need to redraw the framebuffer
     bool renderFlag = true;

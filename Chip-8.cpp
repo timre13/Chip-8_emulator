@@ -160,7 +160,7 @@ void Chip8::initVideo()
             (std::string(TITLE)+" - Loading...").c_str(),
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
             64*20, 32*20,
-            0);
+            SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_RESIZABLE);
     
     if (!window)
     {
@@ -183,6 +183,8 @@ void Chip8::initVideo()
     SDL_RenderPresent(renderer);
     
     SDL_ShowCursor(SDL_DISABLE);
+
+    SDL_SetWindowMinimumSize(window, 200, 100);
 }
 
 void Chip8::deinit()
@@ -204,7 +206,7 @@ void Chip8::renderFrameBuffer()
 {
     SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
     SDL_RenderClear(renderer);
-    
+
     for (int y{}; y < 32; ++y)
     for (int x{}; x < 64; ++x)
     {
@@ -213,14 +215,10 @@ void Chip8::renderFrameBuffer()
         {
             SDL_SetRenderDrawColor(renderer, fgColorR, fgColorG, fgColorb, 255);
             
-            SDL_Rect rect{(x)*20, (y)*20, 20, 20};
-            SDL_RenderFillRect(renderer, &rect);
-        }
-        else
-        {
-            SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
-            
-            SDL_Rect rect{(x)*20, (y)*20, 20, 20};
+            SDL_Rect rect{static_cast<int>(std::ceil(x*20*scale)),
+            			  static_cast<int>(std::ceil(y*20*scale)),
+						  static_cast<int>(std::ceil(20*scale)),
+				          static_cast<int>(std::ceil(20*scale))};
             SDL_RenderFillRect(renderer, &rect);
         }
     }
@@ -284,7 +282,11 @@ void Chip8::setPaused()
 {
 	SDL_SetWindowTitle(window, (std::string(TITLE)+" - [PAUSED]").c_str());
 
-	SDL_Rect rect{0, 0, 64*20, 32*20};
+	SDL_Rect rect{0,
+				  0,
+				  static_cast<int>(std::ceil(64*20*scale)),
+				  static_cast<int>(std::ceil(32*20*scale))
+	};
 
 	SDL_BlendMode originalBlendmode{};
 	SDL_GetRenderDrawBlendMode(renderer, &originalBlendmode);
@@ -297,6 +299,23 @@ void Chip8::setPaused()
 	SDL_RenderPresent(renderer);
 
 	SDL_SetRenderDrawBlendMode(renderer, originalBlendmode);
+}
+
+void Chip8::whenWindowResized(int width, int height)
+{
+	std::cout << "Window resized" << '\n';
+
+	double horizontalScale{width  / (64*20.0)};
+	double   verticalScale{height / (32*20.0)};
+
+	scale = std::min(horizontalScale, verticalScale);
+
+	renderFrameBuffer();
+}
+
+uint32_t Chip8::getWindowID()
+{
+	return SDL_GetWindowID(window);
 }
 
 void Chip8::emulateCycle()
