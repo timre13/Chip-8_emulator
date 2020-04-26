@@ -216,9 +216,9 @@ void Chip8::renderFrameBuffer()
             SDL_SetRenderDrawColor(renderer, fgColorR, fgColorG, fgColorb, 255);
             
             SDL_Rect rect{static_cast<int>(std::ceil(x*20*scale)),
-            			  static_cast<int>(std::ceil(y*20*scale)),
-						  static_cast<int>(std::ceil(20*scale)),
-				          static_cast<int>(std::ceil(20*scale))};
+                          static_cast<int>(std::ceil(y*20*scale)),
+                          static_cast<int>(std::ceil(20*scale)),
+                          static_cast<int>(std::ceil(20*scale))};
             SDL_RenderFillRect(renderer, &rect);
         }
     }
