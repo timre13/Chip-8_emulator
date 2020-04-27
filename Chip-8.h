@@ -118,6 +118,7 @@ private:
     SDL_Renderer *renderer{nullptr};
 
     double scale{1.0};
+    bool isFullscreen{false};
 
     bool hasDeinitCalled{false};
 
@@ -128,6 +129,9 @@ private:
     
     void fetchOpcode();
     
+    void turnOnFullscreen();
+    void turnOffFullscreen();
+
 public:
     Chip8(const std::string &romFilename);
     ~Chip8();
@@ -143,6 +147,8 @@ public:
     void setPaused();
     
     void whenWindowResized(int width, int height);
+
+    void toggleFullscreen();
 
     uint32_t getWindowID();
 

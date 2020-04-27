@@ -83,6 +83,9 @@ int main()
 						case SDLK_F12:
 							isRunning = false;
 							break;
+						case SDLK_F11:
+						    chip8.toggleFullscreen();
+						    break;
 					}
 					break;
 

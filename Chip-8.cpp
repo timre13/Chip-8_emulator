@@ -323,6 +323,26 @@ uint32_t Chip8::getWindowID()
 	return SDL_GetWindowID(window);
 }
 
+void Chip8::turnOnFullscreen()
+{
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+}
+
+void Chip8::turnOffFullscreen()
+{
+    SDL_SetWindowFullscreen(window, 0);
+}
+
+void Chip8::toggleFullscreen()
+{
+    isFullscreen = !isFullscreen;
+
+    if (isFullscreen)
+        turnOnFullscreen();
+    else
+        turnOffFullscreen();
+}
+
 void Chip8::emulateCycle()
 {
     fetchOpcode();

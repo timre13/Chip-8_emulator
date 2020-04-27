@@ -5,6 +5,7 @@ Add:
     [ ] Debug view (show registers and memory,
                     modifiable memory  and register values)
     [ ] Stepping mode (one instuction per step)
+    [x] Switchable fullscreen (with F11) (SDL_WINDOW_FULLSCREEN_DESKTOP)
 
 Fix:
     [ ] Display correctly if drawn outside of the screen
