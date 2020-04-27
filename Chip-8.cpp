@@ -8,6 +8,7 @@
 
 #include "Chip-8.h"
 #include "fontset.h"
+#include "sound.h"
 
 constexpr uint8_t keyMap[16]{
     SDLK_x,
@@ -716,6 +717,6 @@ void Chip8::emulateCycle()
     if (soundTimer > 0)
     {
         --soundTimer;
-        // TODO: sound
+        Sound::makeBeepSound();
     }
 }

@@ -3,7 +3,7 @@
 CC := g++
 
 # compiler flags
-CFLAGS :=  `sdl2-config --libs --cflags` -ggdb3 -O3 --std=c++17 -Wall -lSDL2_image -lm -lSDL2_ttf
+CFLAGS :=  `sdl2-config --libs --cflags` -ggdb3 -O3 --std=c++17 -Wall -lSDL2_image -lm -lSDL2_ttf -lncurses
 
 # headers
 HDRS := *.h

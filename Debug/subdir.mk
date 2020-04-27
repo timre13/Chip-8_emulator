@@ -7,19 +7,22 @@ CPP_SRCS += \
 ../Chip-8.cpp \
 ../DoubleAsker.cpp \
 ../main.cpp \
-../sdl_file_chooser.cpp 
+../sdl_file_chooser.cpp \
+../sound.cpp 
 
 OBJS += \
 ./Chip-8.o \
 ./DoubleAsker.o \
 ./main.o \
-./sdl_file_chooser.o 
+./sdl_file_chooser.o \
+./sound.o 
 
 CPP_DEPS += \
 ./Chip-8.d \
 ./DoubleAsker.d \
 ./main.d \
-./sdl_file_chooser.d 
+./sdl_file_chooser.d \
+./sound.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lSDL2 -lSDL2_ttf
+LIBS := -lSDL2 -lncurses -lSDL2_ttf
 

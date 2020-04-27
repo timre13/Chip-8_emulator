@@ -33,6 +33,7 @@ uint8_t fgColorb{180};
 #include "Chip-8.h"
 #include "sdl_file_chooser.h"
 #include "DoubleAsker.h"
+#include "sound.h"
 
 int main()
 {
