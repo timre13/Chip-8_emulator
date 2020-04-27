@@ -57,7 +57,7 @@ int main()
     
     std::cout << std::hex;
     
-    const double frameDelay{1.0/60*100/emulationSpeed};
+    const double frameDelay{1000.0/500/emulationSpeed};
     
     bool isRunning{true};
     bool isPaused{false};
