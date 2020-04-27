@@ -341,6 +341,8 @@ void Chip8::toggleFullscreen()
         turnOnFullscreen();
     else
         turnOffFullscreen();
+
+    renderFrameBuffer();
 }
 
 void Chip8::emulateCycle()
