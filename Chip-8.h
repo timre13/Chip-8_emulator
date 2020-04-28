@@ -34,7 +34,7 @@ public:
         assert(index >= 0);
         assert(index < 16);
         
-        std::cout << "register " << index << ": " << static_cast<int>(m_registers[index]) << std::endl;
+        //std::cout << "register " << index << ": " << static_cast<int>(m_registers[index]) << std::endl;
         
         return m_registers[index];
     }
