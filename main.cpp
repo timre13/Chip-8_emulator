@@ -87,6 +87,9 @@ int main()
 						case SDLK_F11:
 						    chip8.toggleFullscreen();
 						    break;
+						case SDLK_F10:
+						    chip8.toggleDebugMode();
+						    break;
 					}
 					break;
 
@@ -133,11 +136,13 @@ int main()
 
         chip8.emulateCycle();
         
-        if (chip8.renderFlag)
-            chip8.renderFrameBuffer();
-        else
-            chip8.updateRenderer();
+        //if (chip8.renderFlag)
+        chip8.renderFrameBuffer();
+        //else
+        //    chip8.updateRenderer();
         
+        chip8.displayDebugInfoIfInDebugMode();
+
         SDL_Delay(frameDelay);
     }
 

@@ -2,6 +2,7 @@
 #define CHIP8_H
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <string>
 #include <fstream>
 #include <stdint.h>
@@ -117,8 +118,11 @@ private:
     SDL_Window *window{nullptr};
     SDL_Renderer *renderer{nullptr};
 
+    TTF_Font *font;
+
     double scale{1.0};
     bool isFullscreen{false};
+    bool isDebugMode{false};
 
     bool hasDeinitCalled{false};
 
@@ -131,6 +135,12 @@ private:
     
     void turnOnFullscreen();
     void turnOffFullscreen();
+
+    //void turnOnDebugMode();
+    //void turnOffDebugMode();
+
+    void renderText(const std::string &text, int line, int row=0);
+
 
 public:
     Chip8(const std::string &romFilename);
@@ -149,6 +159,9 @@ public:
     void whenWindowResized(int width, int height);
 
     void toggleFullscreen();
+    void toggleDebugMode();
+
+    void displayDebugInfoIfInDebugMode();
 
     uint32_t getWindowID();
 

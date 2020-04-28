@@ -117,7 +117,7 @@ void Chip8::loadFile(std::string romFilename)
     {
         memory[512+i] = buffer[i];
     }
-    
+
     for (int i{}; i < 0xfff+1; ++i)
     {
         std::cout << std::hex << static_cast<int>(memory[i]) << ' ';
@@ -155,6 +155,14 @@ void Chip8::initVideo()
     	std::exit(2);
     }
     
+    std::cout << "Initializing SDL2_ttf" << std::endl;
+
+    if (TTF_Init())
+    {
+        std::cerr << "Unable to initialize SDL2_ttf: " << TTF_GetError() << '\n';
+        std::exit(2);
+    }
+
     std::cout << "Creating window" << std::endl;
     
     window = SDL_CreateWindow(
@@ -179,6 +187,16 @@ void Chip8::initVideo()
         std::exit(2);
     }
     
+    std::cout << "Loading font" << std::endl;
+
+    font = TTF_OpenFont("Anonymous_Pro.ttf", 16);
+
+    if (!font)
+    {
+        std::cerr << "Unable to load font: " << TTF_GetError() << '\n';
+        std::exit(2);
+    }
+
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
@@ -197,7 +215,10 @@ void Chip8::deinit()
     
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-       
+
+    TTF_CloseFont(font);
+
+    TTF_Quit();
     SDL_Quit();
 
     hasDeinitCalled = true;
@@ -346,12 +367,55 @@ void Chip8::toggleFullscreen()
     renderFrameBuffer();
 }
 
+void Chip8::toggleDebugMode()
+{
+    isDebugMode = !isDebugMode;
+}
+
+void Chip8::renderText(const std::string &text, int line, int row)
+{
+    SDL_Surface *textSurface{TTF_RenderText_Shaded(font, text.c_str(), {255, 255, 255, 100}, {0, 0, 0, 100})};
+    SDL_Texture *textTexture{SDL_CreateTextureFromSurface(renderer, textSurface)};
+
+    SDL_Rect destRect{5+9*row, 25*line, static_cast<int>(text.length())*9, 25};
+
+    SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
+
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+}
+
+void Chip8::displayDebugInfoIfInDebugMode()
+{
+    if (!isDebugMode)
+        return;
+
+    renderText("Opcode: "   + std::to_string(opcode),       0);
+    renderText("PC: "       + std::to_string(pc),           2);
+    renderText("I: "        + std::to_string(I),            4);
+    renderText("SP: "       + std::to_string(sp),           6);
+    renderText("Stack: ",                                   8);
+
+    for (int i{15}; i >= 0; --i)
+        renderText(std::to_string(stack[i]), 9+i);
+
+    renderText("Registers: ",                               0, 20);
+
+    for (int i{}; i < 16; ++i)
+        renderText(std::to_string(i) + ": " + std::to_string(registers[i]), 1+i%4, 20+i/4*7);
+
+    renderText("DT: "       + std::to_string(delayTimer),   6, 20);
+    renderText("ST: "       + std::to_string(soundTimer),   8, 20);
+
+    updateRenderer();
+}
+
 void Chip8::emulateCycle()
 {
     fetchOpcode();
 
     setDebugTitle();
-    
+
     std::cout << std::hex;
     
     switch (opcode & 0xF000)
