@@ -9,6 +9,8 @@
 #include <cassert>
 #include <bitset>
 
+#include "to_hex.h"
+
 #define TITLE "CHIP-8 Emulator"
 
 extern bool storeBitShiftResultInY;
@@ -123,6 +125,7 @@ private:
     double scale{1.0};
     bool isFullscreen{false};
     bool isDebugMode{false};
+    bool isReadingKey{false};
 
     bool hasDeinitCalled{false};
 

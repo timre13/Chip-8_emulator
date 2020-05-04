@@ -418,22 +418,29 @@ void Chip8::displayDebugInfoIfInDebugMode()
 
     clearDebugInfo();
 
-    renderText("Opcode: "   + std::to_string(opcode),       0);
-    renderText("PC: "       + std::to_string(pc),           2);
-    renderText("I: "        + std::to_string(I),            4);
-    renderText("SP: "       + std::to_string(sp),           6);
-    renderText("Stack: ",                                   8);
+    renderText("Opcode: "   + to_hex(opcode),       0);
+    renderText("PC: "       + to_hex(pc),           2);
+    renderText("I: "        + to_hex(I),            4);
+    renderText("SP: "       + to_hex(sp),           6);
+    renderText("Stack: ",                           8);
 
     for (int i{15}; i >= 0; --i)
-        renderText(std::to_string(stack[i]), 9+i);
+        renderText(to_hex(stack[i]), 9+i);
 
     renderText("Registers: ",                               0, 20);
 
     for (int i{}; i < 16; ++i)
-        renderText(std::to_string(i) + ": " + std::to_string(registers[i]), 1+i%4, 20+i/4*7);
+        renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12);
 
-    renderText("DT: "       + std::to_string(delayTimer),   6, 20);
-    renderText("ST: "       + std::to_string(soundTimer),   8, 20);
+    renderText("DT: "       + to_hex(delayTimer),   10, 20);
+    renderText("ST: "       + to_hex(soundTimer),   12, 20);
+
+    if (isReadingKey)
+    {
+        renderText("Reading key state", 14, 20);
+
+        isReadingKey = false;
+    }
 
     updateRenderer();
 }
@@ -646,6 +653,8 @@ void Chip8::emulateCycle()
                 {
                     std::cout << "SKP Vx" << std::endl;
                     
+                    isReadingKey = true;
+
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
                     std::cout << "KEY: " << keyState[keyMap[registers[(opcode & 0x0F00)>>8]]] << std::endl;
@@ -659,6 +668,8 @@ void Chip8::emulateCycle()
                 {
                     std::cout << "SKNP Vx" << std::endl;
                     
+                    isReadingKey = true;
+
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
                     std::cout << "KEY: " << keyState[keyMap[registers[(opcode & 0x0F00)>>8]]] << std::endl;
