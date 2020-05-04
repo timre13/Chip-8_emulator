@@ -131,6 +131,9 @@ private:
     void loadFontSet();
     void initVideo();
     
+    void clearRenderer();
+    void clearDebugInfo();
+
     void fetchOpcode();
     
     void turnOnFullscreen();

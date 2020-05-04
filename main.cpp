@@ -119,6 +119,8 @@ int main()
 
         	chip8.renderFrameBuffer();
 
+        	chip8.displayDebugInfoIfInDebugMode();
+
         	chip8.setPaused();
 
         	chip8.updateRenderer();
@@ -136,10 +138,10 @@ int main()
 
         chip8.emulateCycle();
         
-        //if (chip8.renderFlag)
-        chip8.renderFrameBuffer();
-        //else
-        //    chip8.updateRenderer();
+        if (chip8.renderFlag)
+            chip8.renderFrameBuffer();
+        else
+            chip8.updateRenderer();
         
         chip8.displayDebugInfoIfInDebugMode();
 

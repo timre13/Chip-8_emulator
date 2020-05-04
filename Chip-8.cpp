@@ -231,8 +231,7 @@ Chip8::~Chip8()
 
 void Chip8::renderFrameBuffer()
 {
-    SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
-    SDL_RenderClear(renderer);
+    clearRenderer();
 
     for (int y{}; y < 32; ++y)
     for (int x{}; x < 64; ++x)
@@ -260,6 +259,13 @@ void Chip8::renderFrameBuffer()
 void Chip8::updateRenderer()
 {
     SDL_RenderPresent(renderer);
+}
+
+void Chip8::clearRenderer()
+{
+    SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
+    SDL_Rect rect{0, 0, 64*20*scale, 32*20*scale};
+    SDL_RenderFillRect(renderer, &rect);
 }
 
 void Chip8::fetchOpcode()
@@ -337,6 +343,11 @@ void Chip8::whenWindowResized(int width, int height)
 
 	scale = std::min(horizontalScale, verticalScale);
 
+	if (isDebugMode)
+	    scale *= 0.6;
+
+	SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
+	SDL_RenderClear(renderer);
 	renderFrameBuffer();
 }
 
@@ -370,6 +381,12 @@ void Chip8::toggleFullscreen()
 void Chip8::toggleDebugMode()
 {
     isDebugMode = !isDebugMode;
+
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    // Call the window resize function to calculate the new
+    // scale, so the debug info can fit in the window
+    whenWindowResized(w, h);
 }
 
 void Chip8::renderText(const std::string &text, int line, int row)
@@ -377,7 +394,7 @@ void Chip8::renderText(const std::string &text, int line, int row)
     SDL_Surface *textSurface{TTF_RenderText_Shaded(font, text.c_str(), {255, 255, 255, 100}, {0, 0, 0, 100})};
     SDL_Texture *textTexture{SDL_CreateTextureFromSurface(renderer, textSurface)};
 
-    SDL_Rect destRect{5+9*row, 25*line, static_cast<int>(text.length())*9, 25};
+    SDL_Rect destRect{static_cast<int>(64*20*scale+9*row)+5, 25*line, static_cast<int>(text.length())*9, 25};
 
     SDL_RenderCopy(renderer, textTexture, nullptr, &destRect);
 
@@ -385,10 +402,21 @@ void Chip8::renderText(const std::string &text, int line, int row)
     SDL_DestroyTexture(textTexture);
 }
 
+void Chip8::clearDebugInfo()
+{
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    SDL_Rect rect{64*20*scale, 0, w-64*20*scale, h};
+    SDL_SetRenderDrawColor(renderer, 100, 150, 150, 255);
+    SDL_RenderFillRect(renderer, &rect);
+}
+
 void Chip8::displayDebugInfoIfInDebugMode()
 {
     if (!isDebugMode)
         return;
+
+    clearDebugInfo();
 
     renderText("Opcode: "   + std::to_string(opcode),       0);
     renderText("PC: "       + std::to_string(pc),           2);
