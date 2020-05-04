@@ -210,9 +210,12 @@ void Chip8::deinit()
 {
     if (hasDeinitCalled)
         return;
+    
+    SDL_SetWindowTitle(window, (std::string(TITLE)+" - Exiting...").c_str());
+    SDL_RenderPresent(renderer);
 
     std::cout << '\n' << "----- deinit -----" << std::endl;
-    
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
