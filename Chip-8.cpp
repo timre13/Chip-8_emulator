@@ -389,9 +389,9 @@ void Chip8::toggleDebugMode()
     whenWindowResized(w, h);
 }
 
-void Chip8::renderText(const std::string &text, int line, int row)
+void Chip8::renderText(const std::string &text, int line, int row, const SDL_Color &bgColor)
 {
-    SDL_Surface *textSurface{TTF_RenderText_Shaded(font, text.c_str(), {255, 255, 255, 100}, {0, 0, 0, 100})};
+    SDL_Surface *textSurface{TTF_RenderText_Shaded(font, text.c_str(), {255, 255, 255, 255}, bgColor)};
     SDL_Texture *textTexture{SDL_CreateTextureFromSurface(renderer, textSurface)};
 
     SDL_Rect destRect{static_cast<int>(64*20*scale+9*row)+5, 25*line, static_cast<int>(text.length())*9, 25};
@@ -429,8 +429,19 @@ void Chip8::displayDebugInfoIfInDebugMode()
 
     renderText("Registers: ",                               0, 20);
 
+    uint8_t lastReadRegister{registers.getLastReadRegister()};
+    uint8_t lastWrittenRegister{registers.getLastWrittenRegister()};
+
     for (int i{}; i < 16; ++i)
-        renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12);
+    {
+        if (lastWrittenRegister == i)
+            renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12, {255, 0, 0, 255});
+        // If the current register is the last written, ignore if it was read.
+        else if (lastReadRegister == i)
+            renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12, {0, 255, 0, 255});
+        else
+            renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12);
+    }
 
     renderText("DT: "       + to_hex(delayTimer),   10, 20);
     renderText("ST: "       + to_hex(soundTimer),   12, 20);

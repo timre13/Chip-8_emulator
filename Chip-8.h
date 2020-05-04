@@ -29,6 +29,10 @@ class Registers
 {
 private:
     uint8_t m_registers[16]{};
+    uint8_t m_oldRegisterValues[16]{};
+
+    // For debug mode
+    uint8_t lastReadRegister{255};
 
 public:
     uint8_t& operator[](int index)
@@ -38,7 +42,36 @@ public:
         
         //std::cout << "register " << index << ": " << static_cast<int>(m_registers[index]) << std::endl;
         
+        std::copy(m_registers, m_registers+16, m_oldRegisterValues);
+
+        lastReadRegister = index;
+
         return m_registers[index];
+    }
+
+    uint8_t getLastReadRegister()
+    {
+         uint8_t lastReadRegisterValue{lastReadRegister};
+
+         lastReadRegister = 255;
+
+         return lastReadRegisterValue;
+    }
+
+    uint8_t getLastWrittenRegister()
+    {
+        uint8_t lastWrittenRegister{255};
+
+        for (int i{}; i < 16; ++i)
+        {
+            if (m_oldRegisterValues[i] != m_registers[i])
+            {
+                lastWrittenRegister = i;
+                break;
+            }
+        }
+
+        return lastWrittenRegister;
     }
 };
 
@@ -145,7 +178,7 @@ private:
     //void turnOnDebugMode();
     //void turnOffDebugMode();
 
-    void renderText(const std::string &text, int line, int row=0);
+    void renderText(const std::string &text, int line, int row=0, const SDL_Color &bgColor={0, 0, 0, 100});
 
 
 public:
