@@ -159,6 +159,7 @@ private:
     bool isFullscreen{false};
     bool isDebugMode{false};
     bool isReadingKey{false};
+    bool isCursorShown{true};
 
     bool hasDeinitCalled{false};
 
@@ -199,6 +200,7 @@ public:
 
     void toggleFullscreen();
     void toggleDebugMode();
+    void toggleCursor();
 
     void displayDebugInfoIfInDebugMode();
 

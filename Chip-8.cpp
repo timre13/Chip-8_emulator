@@ -200,8 +200,6 @@ void Chip8::initVideo()
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
-    
-    SDL_ShowCursor(SDL_DISABLE);
 
     SDL_SetWindowMinimumSize(window, 200, 100);
 }
@@ -379,6 +377,13 @@ void Chip8::toggleFullscreen()
         turnOffFullscreen();
 
     renderFrameBuffer();
+}
+
+void Chip8::toggleCursor()
+{
+    isCursorShown = !isCursorShown;
+
+    SDL_ShowCursor(isCursorShown);
 }
 
 void Chip8::toggleDebugMode()

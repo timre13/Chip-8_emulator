@@ -90,6 +90,9 @@ int main()
 						case SDLK_F10:
 						    chip8.toggleDebugMode();
 						    break;
+						case SDLK_F9:
+						    chip8.toggleCursor();
+						    break;
 					}
 					break;
 
