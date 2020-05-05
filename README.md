@@ -12,7 +12,7 @@ sudo apt install make libsdl2-dev libsdl2-ttf-dev
 
 ## Usage
 Note:
-> We will reference the ROM files as ROM or program.
+> We will reference the ROM files as ROM or program in this documentation.
 
 ### Select a CHIP-8 ROM
 When you start the emulator, the ROM selector opens. It shows the ROMs in the ./roms directory and in its subdirectories. You can copy your own ROMs here.
@@ -42,7 +42,7 @@ After you select the ROM and enter the speed, the emulator window opens. There y
 ### The title
 In the title bar you can see the text CHIP-8 Emulator and some useful informations. If the program is currently running, you can see the program counter, index register, the stack pointer, the delay timer, sount timer and the currently executed opcode.
 
-If the program waits for input, it is indicated as *waiting for keypress*
+If the program is waiting for input, it is indicated as *waiting for keypress*
 
 If the user paused the program, there is *[PAUSED]* at the end of the title.
 
@@ -73,7 +73,29 @@ This is how the keys are mapped to the (US) keyboard:
 #### Function keys
 
 ##### Escape
-Pauses the program. Press again to resume.
+Pauses the program. Press again to resume. Disables stepping mode if it is active.
+
+When paused, the emulator dims the colors.
+
+##### F5
+Enables stepping mode. Disables paused mode if active.
+
+##### F6
+Executes an instruction in stepping mode. No effect if stepping mode is not active.
+
+##### F9
+Hides/Shows the mouse cursor.
+
+##### F10
+Enables debug mode.
+
+In debug mode you can see the currently executed opcode, the program counter,
+the index register, the stack pointer, the content of the stack, the register values,
+the delay and the sound timers. If the program reads from a register, its background is green
+colored, if the program writes to it, it is red colored. It is also displayed when a program
+reads which key is pressed.
+
+All the values are displayed as hexadecimal with the 0x prefix.
 
 ##### F11
 Toggles the fullscreen mode.
