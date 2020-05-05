@@ -63,6 +63,8 @@ int main()
     bool isRunning{true};
     bool isPaused{false};
     bool wasPaused{false};
+    bool isSteppingMode{false};
+    bool shouldStep{false}; // no effect when not in stepping mode
     while (isRunning && !chip8.hasEnded)
     {
         SDL_Event event;
@@ -80,6 +82,7 @@ int main()
 					{
 						case SDLK_ESCAPE:
 							isPaused = !isPaused;
+							isSteppingMode = false;
 							break;
 						case SDLK_F12:
 							isRunning = false;
@@ -92,6 +95,13 @@ int main()
 						    break;
 						case SDLK_F9:
 						    chip8.toggleCursor();
+						    break;
+						case SDLK_F6:
+						    shouldStep = true;
+						    break;
+						case SDLK_F5:
+						    isSteppingMode = !isSteppingMode;
+						    isPaused = false;
 						    break;
 					}
 					break;
@@ -116,7 +126,7 @@ int main()
 			}
         }
 
-        if (isPaused)
+        if (isPaused || (isSteppingMode && !shouldStep))
         {
         	wasPaused = true;
 
@@ -124,13 +134,22 @@ int main()
 
         	chip8.displayDebugInfoIfInDebugMode();
 
-        	chip8.setPaused();
+        	if (isPaused)
+        	    chip8.setPaused();
+        	else
+        	    chip8.setDebugTitle();
 
         	chip8.updateRenderer();
 
-        	SDL_Delay(frameDelay*500);
+        	// If paused, slow down the cycle to save processing power
+        	if (isPaused)
+        	    SDL_Delay(frameDelay*500);
+        	else
+        	    SDL_Delay(frameDelay);
 
-        	continue;
+        	// If paused or the stepping key was not pressed, don't execute instruction
+        	if (isPaused || !shouldStep)
+        	    continue;
         }
 
         if (wasPaused)
@@ -141,6 +160,9 @@ int main()
 
         chip8.emulateCycle();
         
+        // Mark that we executed an instruction since the last step
+        shouldStep = false;
+
         if (chip8.renderFlag)
             chip8.renderFrameBuffer();
         else
