@@ -32,7 +32,7 @@ private:
     uint8_t m_oldRegisterValues[16]{};
 
     // For debug mode
-    uint8_t lastReadRegister{255};
+    bool isReadRegister[16]{};
 
 public:
     uint8_t& operator[](int index)
@@ -41,37 +41,37 @@ public:
         assert(index < 16);
         
         //std::cout << "register " << index << ": " << static_cast<int>(m_registers[index]) << std::endl;
-        
-        std::copy(m_registers, m_registers+15, m_oldRegisterValues);
 
-        lastReadRegister = index;
+        isReadRegister[index] = true;
+
+        std::cerr << "Register operation: " << index << std::endl;
 
         return m_registers[index];
     }
 
-    uint8_t getLastReadRegister()
+    // This is for the case when the emulator itself (not the ROM!) wants to get a register's value.
+    // This should be used in debug mode.
+    uint8_t get(int index) const
     {
-         uint8_t lastReadRegisterValue{lastReadRegister};
-
-         lastReadRegister = 255;
-
-         return lastReadRegisterValue;
+        return m_registers[index];
     }
 
-    uint8_t getLastWrittenRegister()
+    uint8_t getIsReadRegister(int index)
     {
-        uint8_t lastWrittenRegister{255};
+         return isReadRegister[index];
+    }
 
-        for (int i{}; i < 16; ++i)
-        {
-            if (m_oldRegisterValues[i] != m_registers[i])
-            {
-                lastWrittenRegister = i;
-                break;
-            }
-        }
+    uint8_t getIsWrittenRegister(int index)
+    {
+        return m_oldRegisterValues[index] != m_registers[index];
+    }
 
-        return lastWrittenRegister;
+    void clearLastRegisterOperationFlags()
+    {
+        // Clear isWrittenRegister
+        memcpy(m_oldRegisterValues, m_registers, sizeof(m_registers));
+        // Clear lastReadRegister
+        memset(isReadRegister, false, sizeof(isReadRegister));
     }
 };
 
@@ -205,6 +205,8 @@ public:
     void displayDebugInfoIfInDebugMode();
 
     uint32_t getWindowID();
+
+    void clearLastRegisterOperationFlags();
 
     bool hasEnded{false}; // marks whether the program ended
     // Marks whether we need to redraw the framebuffer

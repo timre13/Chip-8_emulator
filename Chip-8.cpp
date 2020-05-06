@@ -254,7 +254,7 @@ void Chip8::renderFrameBuffer()
     
     renderFlag = false;
     
-    std::cout << "Frame rendered" << std::endl;
+    //std::cout << "Frame rendered" << std::endl;
 }
 
 void Chip8::updateRenderer()
@@ -357,6 +357,11 @@ uint32_t Chip8::getWindowID()
 	return SDL_GetWindowID(window);
 }
 
+void Chip8::clearLastRegisterOperationFlags()
+{
+    registers.clearLastRegisterOperationFlags();
+}
+
 void Chip8::turnOnFullscreen()
 {
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -437,18 +442,15 @@ void Chip8::displayDebugInfoIfInDebugMode()
 
     renderText("Registers: ",                               0, 20);
 
-    uint8_t lastReadRegister{registers.getLastReadRegister()};
-    uint8_t lastWrittenRegister{registers.getLastWrittenRegister()};
-
     for (int i{}; i < 16; ++i)
     {
-        if (lastWrittenRegister == i)
-            renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12, {255, 0, 0, 255});
+        if (registers.getIsWrittenRegister(i))
+            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i)), 1+i%8, 20+i/8*12, {255, 0, 0, 255});
         // If the current register is the last written, ignore if it was read.
-        else if (lastReadRegister == i)
-            renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12, {0, 255, 0, 255});
+        else if (registers.getIsReadRegister(i))
+            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i)), 1+i%8, 20+i/8*12, {0, 255, 0, 255});
         else
-            renderText(to_hex(i, 1) + ": " + to_hex(registers[i]), 1+i%8, 20+i/8*12);
+            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i)), 1+i%8, 20+i/8*12);
     }
 
     renderText("DT: "       + to_hex(delayTimer),   10, 20);

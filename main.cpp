@@ -158,6 +158,8 @@ int main()
         	wasPaused = false;
         }
 
+        chip8.clearLastRegisterOperationFlags();
+
         chip8.emulateCycle();
         
         // Mark that we executed an instruction since the last step
