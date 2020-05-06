@@ -42,7 +42,7 @@ public:
         
         //std::cout << "register " << index << ": " << static_cast<int>(m_registers[index]) << std::endl;
         
-        std::copy(m_registers, m_registers+16, m_oldRegisterValues);
+        std::copy(m_registers, m_registers+15, m_oldRegisterValues);
 
         lastReadRegister = index;
 
