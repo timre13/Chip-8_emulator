@@ -65,6 +65,7 @@ int main()
     bool wasPaused{false};
     bool isSteppingMode{false};
     bool shouldStep{false}; // no effect when not in stepping mode
+    double renderUpdateCountdown{0}; // Decremented and when 0, the renderer is updated
     while (isRunning && !chip8.hasEnded)
     {
         SDL_Event event;
@@ -130,7 +131,7 @@ int main()
         {
         	wasPaused = true;
 
-        	chip8.renderFrameBuffer();
+        	//chip8.renderFrameBuffer();
 
         	chip8.displayDebugInfoIfInDebugMode();
 
@@ -156,6 +157,7 @@ int main()
         {
         	chip8.renderFrameBuffer();
         	wasPaused = false;
+        	renderUpdateCountdown = 10;
         }
 
         chip8.clearLastRegisterOperationFlags();
@@ -166,13 +168,21 @@ int main()
         shouldStep = false;
 
         if (chip8.renderFlag)
+        {
             chip8.renderFrameBuffer();
-        else
+            renderUpdateCountdown = 10;
+        }
+        else if (renderUpdateCountdown <= 0)
+        {
             chip8.updateRenderer();
+            renderUpdateCountdown = 10;
+        }
         
         chip8.displayDebugInfoIfInDebugMode();
 
         SDL_Delay(frameDelay);
+
+        renderUpdateCountdown -= frameDelay;
     }
 
     chip8.deinit();

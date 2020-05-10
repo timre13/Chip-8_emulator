@@ -6,6 +6,8 @@
 #include <random>
 #include <ctime>
 
+#include "Timer.h"
+
 #include "Chip-8.h"
 #include "fontset.h"
 #include "sound.h"
@@ -47,6 +49,8 @@ constexpr uint8_t keyMapScancode[16]{
     SDL_SCANCODE_F,
     SDL_SCANCODE_V
     };
+
+Timer timer;
 
 Chip8::Chip8(const std::string &romFilename)
 {
@@ -199,7 +203,7 @@ void Chip8::initVideo()
 
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer);
+    updateRenderer();
 
     SDL_SetWindowMinimumSize(window, 200, 100);
 }
@@ -210,7 +214,7 @@ void Chip8::deinit()
         return;
     
     SDL_SetWindowTitle(window, (std::string(TITLE)+" - Exiting...").c_str());
-    SDL_RenderPresent(renderer);
+    updateRenderer();
 
     std::cout << '\n' << "----- deinit -----" << std::endl;
 
@@ -250,14 +254,17 @@ void Chip8::renderFrameBuffer()
         }
     }
     
-    SDL_RenderPresent(renderer);
+    updateRenderer();
     
     renderFlag = false;
 }
 
-void Chip8::updateRenderer()
+inline void Chip8::updateRenderer()
 {
     SDL_RenderPresent(renderer);
+
+    std::cout << "Time passed since last update: " << std::dec << timer.get() << " ms" << std::hex << '\n';
+    timer.reset();
 }
 
 void Chip8::clearRenderer()
@@ -328,7 +335,7 @@ void Chip8::setPaused()
 
 	SDL_RenderFillRect(renderer, &rect);
 
-	SDL_RenderPresent(renderer);
+	updateRenderer();
 
 	SDL_SetRenderDrawBlendMode(renderer, originalBlendmode);
 }
@@ -727,7 +734,7 @@ void Chip8::emulateCycle()
                             (std::string(SDL_GetWindowTitle(window))+
                             std::string(" - waiting for keypress")).c_str());
                         
-                        SDL_RenderPresent(renderer);
+                        updateRenderer();
                         
                         SDL_Event event;
                         SDL_PollEvent(&event);

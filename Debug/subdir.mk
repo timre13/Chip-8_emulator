@@ -6,6 +6,7 @@
 CPP_SRCS += \
 ../Chip-8.cpp \
 ../DoubleAsker.cpp \
+../Timer.cpp \
 ../main.cpp \
 ../sdl_file_chooser.cpp \
 ../sound.cpp 
@@ -13,6 +14,7 @@ CPP_SRCS += \
 OBJS += \
 ./Chip-8.o \
 ./DoubleAsker.o \
+./Timer.o \
 ./main.o \
 ./sdl_file_chooser.o \
 ./sound.o 
@@ -20,6 +22,7 @@ OBJS += \
 CPP_DEPS += \
 ./Chip-8.d \
 ./DoubleAsker.d \
+./Timer.d \
 ./main.d \
 ./sdl_file_chooser.d \
 ./sound.d 
