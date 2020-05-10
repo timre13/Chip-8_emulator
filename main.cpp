@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <algorithm>
 
+//#define NDEBUG
+
 //------------------------------------------------------------------------------
 
 // This switch marks whether the result of the bit
@@ -35,8 +37,13 @@ uint8_t fgColorb{150};
 #include "DoubleAsker.h"
 #include "sound.h"
 
+
 int main()
 {
+    #ifdef NDEBUG
+        std::cout.rdbuf(nullptr);
+    #endif
+
     FileChooser fileChooser{"./roms"};
     std::string romFilename{fileChooser.get()};
     
