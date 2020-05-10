@@ -253,8 +253,6 @@ void Chip8::renderFrameBuffer()
     SDL_RenderPresent(renderer);
     
     renderFlag = false;
-    
-    //std::cout << "Frame rendered" << std::endl;
 }
 
 void Chip8::updateRenderer()

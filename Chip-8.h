@@ -39,12 +39,8 @@ public:
     {
         assert(index >= 0);
         assert(index < 16);
-        
-        //std::cout << "register " << index << ": " << static_cast<int>(m_registers[index]) << std::endl;
 
         isReadRegister[index] = true;
-
-        std::cerr << "Register operation: " << index << std::endl;
 
         return m_registers[index];
     }
@@ -85,8 +81,6 @@ public:
 
     int& operator[](int index)
     {
-        //std::cout << index << " element of frame buffer accessed" << std::endl;
-        
         //assert(index >= 0);
         //assert(index < 32);
         
@@ -147,7 +141,6 @@ private:
     // We don't fill it with zeros, because the original implementation doesn't do so
     Framebuffer frameBuffer;
 
-    //std::fstream romFile;
     int romSize;
 
     SDL_Window *window{nullptr};
@@ -175,9 +168,6 @@ private:
     
     void turnOnFullscreen();
     void turnOffFullscreen();
-
-    //void turnOnDebugMode();
-    //void turnOffDebugMode();
 
     void renderText(const std::string &text, int line, int row=0, const SDL_Color &bgColor={0, 0, 0, 100});
 
