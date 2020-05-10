@@ -5,12 +5,15 @@
 #include <cassert>
 #include <random>
 #include <ctime>
+#include <cstring>
 
 #include "Timer.h"
 
 #include "Chip-8.h"
 #include "fontset.h"
 #include "sound.h"
+
+//#define ENABLE_DEBUG_TITLE
 
 constexpr uint8_t keyMap[16]{
     SDLK_x,
@@ -306,6 +309,7 @@ void Chip8::fetchOpcode()
 
 void Chip8::setDebugTitle()
 {
+#ifdef ENABLE_DEBUG_TITLE
     SDL_SetWindowTitle(window,
         (std::string(TITLE)+" - "+
             "PC: "      + std::to_string(pc)         + " "
@@ -315,6 +319,12 @@ void Chip8::setDebugTitle()
             "ST: "      + std::to_string(soundTimer) + " "
             "Opcode: "  + std::to_string(opcode)     + " "
         ).c_str());
+#else
+    // If the window title is not the default
+    if (std::strcmp(SDL_GetWindowTitle(window), TITLE))
+        // Set the default title
+        SDL_SetWindowTitle(window, TITLE);
+#endif
 }
 
 void Chip8::setPaused()

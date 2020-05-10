@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <algorithm>
 
-//#define NDEBUG
+#define NDEBUG
 
 //------------------------------------------------------------------------------
 
