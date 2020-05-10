@@ -164,7 +164,7 @@ int main()
         {
         	chip8.renderFrameBuffer();
         	wasPaused = false;
-        	renderUpdateCountdown = 10;
+        	renderUpdateCountdown = 16.67;
         }
 
         chip8.clearLastRegisterOperationFlags();
@@ -177,12 +177,12 @@ int main()
         if (chip8.renderFlag)
         {
             chip8.renderFrameBuffer();
-            renderUpdateCountdown = 10;
+            renderUpdateCountdown = 16.67;
         }
         else if (renderUpdateCountdown <= 0)
         {
             chip8.updateRenderer();
-            renderUpdateCountdown = 10;
+            renderUpdateCountdown = 16.67;
         }
         
         chip8.displayDebugInfoIfInDebugMode();
