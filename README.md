@@ -40,6 +40,9 @@ After you select the ROM and enter the speed, the emulator window opens. There y
 ![The main emulator window (currently executing Tetris)](./readme/tetris.png)
 
 ### The title
+The debug title is **disabled** by default (because it caused high CPU usage).
+You can enable it by defining the *ENABLE_DEBUG_TITLE* macro in a source file.
+
 In the title bar you can see the text CHIP-8 Emulator and some useful informations. If the program is currently running, you can see the program counter, index register, the stack pointer, the delay timer, sount timer and the currently executed opcode.
 
 If the program is waiting for input, it is indicated as *waiting for keypress*
