@@ -98,6 +98,8 @@ the delay and the sound timers. If the program reads from a register, its backgr
 colored, if the program writes to it, it is red colored. It is also displayed when a program
 reads which key is pressed.
 
+![Debug mode](./readme/debug-mode.png)
+
 All the values are displayed as hexadecimal with the 0x prefix.
 
 ##### F11
