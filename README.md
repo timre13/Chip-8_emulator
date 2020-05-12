@@ -105,3 +105,6 @@ Toggles the fullscreen mode.
 
 ##### F12
 Closes the emulator.
+
+## License
+Licensed under the MIT license.
