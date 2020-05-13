@@ -95,16 +95,13 @@ void Chip8::loadFile(std::string romFilename)
     
     std::cout << "End of program segment: " << std::dec <<  511+romSize << std::hex << '\n';
     
-    uint8_t *buffer = static_cast<uint8_t *>(malloc(8 * romSize));
+    uint8_t *buffer = static_cast<uint8_t *>(calloc(romSize, 8));
     
     if (buffer == nullptr)
     {
         std::cout << "Unable to allocate memory" << '\n';
         std::exit(2);
     }
-    
-    for (int i{}; i < romSize; ++i)
-        buffer[i] = 0;
     
     auto copied = fread(buffer, 8, romSize, romFile);
     
