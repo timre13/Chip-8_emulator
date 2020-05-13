@@ -154,6 +154,10 @@ private:
     bool isReadingKey{false};
     bool isCursorShown{true};
 
+    // Helps to decrement the sound and delay timers at 60 FPS
+    // This is decremented after every frame and if 0, the timers decremented.
+    double timerDecrementCountdown{16.67};
+
     bool hasDeinitCalled{false};
 
     

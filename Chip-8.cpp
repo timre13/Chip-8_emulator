@@ -13,6 +13,8 @@
 #include "fontset.h"
 #include "sound.h"
 
+extern double frameDelay;
+
 //#define ENABLE_DEBUG_TITLE
 
 constexpr uint8_t keyMap[16]{
@@ -487,8 +489,10 @@ void Chip8::emulateCycle()
 
     setDebugTitle();
 
+    timerDecrementCountdown -= frameDelay;
+
     std::cout << std::hex;
-    
+
     switch (opcode & 0xF000)
     {
         case 0x0000:
@@ -850,12 +854,18 @@ void Chip8::emulateCycle()
             break;
     }
     
-    if (delayTimer > 0)
-        --delayTimer;
-    
-    if (soundTimer > 0)
+    if (timerDecrementCountdown <= 0)
     {
-        --soundTimer;
-        Sound::makeBeepSound();
+        if (delayTimer > 0)
+            --delayTimer;
+
+        if (soundTimer > 0)
+        {
+            --soundTimer;
+            Sound::makeBeepSound();
+        }
+
+        // reset the timer
+        timerDecrementCountdown = 16.67;
     }
 }
