@@ -102,14 +102,14 @@ void Chip8::loadFile(std::string romFilename)
         std::exit(2);
     }
     
-    auto copied = fread(buffer, 8, romSize, romFile);
-    auto fileCursorPos = ftell(romFile);
+    // Read from the file to the buffer
+    fread(buffer, 8, romSize, romFile);
+
+    auto copied = ftell(romFile);
     
     std::cout << "Copied: " << std::dec << copied << std::hex << " bytes" << std::endl;
-    
-    std::cout << "File cursor position: " << std::dec << fileCursorPos << std::hex << std::endl;
 
-    if (!copied)
+    if (copied != romSize)
     {
         std::cout << "Unable to copy to buffer" << '\n';
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to copy file content to buffer", window);
