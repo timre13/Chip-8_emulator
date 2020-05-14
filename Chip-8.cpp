@@ -7,8 +7,6 @@
 #include <ctime>
 #include <cstring>
 
-#include "Timer.h"
-
 #include "Chip-8.h"
 #include "fontset.h"
 #include "sound.h"
@@ -54,8 +52,6 @@ constexpr uint8_t keyMapScancode[16]{
     SDL_SCANCODE_F,
     SDL_SCANCODE_V
     };
-
-Timer timer;
 
 Chip8::Chip8(const std::string &romFilename)
 {
@@ -264,9 +260,6 @@ void Chip8::renderFrameBuffer()
 inline void Chip8::updateRenderer()
 {
     SDL_RenderPresent(renderer);
-
-    std::cout << "Time passed since last update: " << std::dec << timer.get() << " ms" << std::hex << '\n';
-    timer.reset();
 }
 
 void Chip8::clearRenderer()
