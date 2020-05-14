@@ -1,5 +1,5 @@
 # CHIP-8_emulator
-CHIP-8 emulator written in C++ using SDL2.
+CHIP-8 emulator with debug view. Written in C++ using SDL2.
 
 ![PONG](./readme/PONG.png)
 
@@ -12,7 +12,7 @@ sudo apt install make libsdl2-dev libsdl2-ttf-dev
 
 ## Usage
 Note:
-> We will reference the ROM files as ROM or program in this documentation.
+> I will refer to the ROM files as ROM or program in this documentation.
 
 ### Select a CHIP-8 ROM
 When you start the emulator, the ROM selector opens. It shows the ROMs in the ./roms directory and in its subdirectories. You can copy your own ROMs here.
