@@ -4,7 +4,7 @@ Add:
     [ ] Configurable colors and compatibility options using config file
     [x] Debug view (show registers and memory,
                     modifiable memory  and register values)
-    [ ] Stepping mode (one instuction per step)
+    [x] Stepping mode (one instuction per step)
     [x] Switchable fullscreen (with F11) (SDL_WINDOW_FULLSCREEN_DESKTOP)
     [x] Implement sound
     [ ] Sound support for windows
@@ -12,5 +12,5 @@ Add:
 Fix:
     [ ] Display correctly if drawn outside of the screen
     [x] Emulation speed should be 500 instructions per sec
-    [ ] The delay timer and the sound timer should be independent of the emulation speed
+    [x] The delay timer and the sound timer should be independent of the emulation speed
     [ ] Use a POSIX library to implement beep (not ncurses)
