@@ -68,7 +68,7 @@ Chip8::Chip8(const std::string &romFilename)
 
 void Chip8::loadFile(std::string romFilename)
 {
-    std::cout << "Memory size: " << sizeof(memory) / sizeof(memory[0]) << std::endl;
+    std::cout << "Emulated memory size: " << sizeof(memory) / sizeof(memory[0]) << std::endl;
     
     std::cout << "Opening file: " << romFilename << std::endl;
     
@@ -103,9 +103,12 @@ void Chip8::loadFile(std::string romFilename)
     }
     
     auto copied = fread(buffer, 8, romSize, romFile);
+    auto fileCursorPos = ftell(romFile);
     
-    std::cout << "Copied: " << copied << std::endl;
+    std::cout << "Copied: " << std::dec << copied << std::hex << " bytes" << std::endl;
     
+    std::cout << "File cursor position: " << std::dec << fileCursorPos << std::hex << std::endl;
+
     if (!copied)
     {
         std::cout << "Unable to copy to buffer" << '\n';
@@ -113,8 +116,8 @@ void Chip8::loadFile(std::string romFilename)
 
         std::exit(2);
     }
-    
-    std::cout << '\n' << "--- BUFFER --- " << '\n';
+
+    std::cout << '\n' << "--- FILE BUFFER --- " << '\n';
     for (int i{}; i < romSize; ++i)
         std::cout << static_cast<int>(buffer[i]) << ' ';
     std::cout << '\n' << "--- END OF BUFFER ---" << '\n';
@@ -125,13 +128,17 @@ void Chip8::loadFile(std::string romFilename)
         memory[512+i] = buffer[i];
     }
 
+    std::cout << '\n' << "--- START OF MEMORY ---" << '\n';
+
     for (int i{}; i < 0xfff+1; ++i)
     {
-        std::cout << std::hex << static_cast<int>(memory[i]) << ' ';
-        if ((i == 0x200-1) || (i == 0xFFF))
-            std::cout << '\n' << std::string(170, '-') << '\n';
+        std::cout << static_cast<int>(memory[i]) << ' ';
+        if (i == 0x200-1)
+            std::cout << '\n' << "--- START OF PROGRAM ---" << '\n';
         if ((i) == (romSize+511))
-            std::cout << '\n' << "-- END OF PROGRAM ---" << '\n';
+            std::cout << '\n' << "--- END OF PROGRAM ---" << '\n';
+        if (i == 0xFFF)
+            std::cout << '\n' << "--- END OF MEMORY ---" << '\n';
     }
     std::cout << '\n';
     
