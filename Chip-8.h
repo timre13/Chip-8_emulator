@@ -175,6 +175,8 @@ private:
 
     void renderText(const std::string &text, int line, int row=0, const SDL_Color &bgColor={0, 0, 0, 100});
 
+    void reportInvalidOpcode(uint8_t opcode);
+
 
 public:
     Chip8(const std::string &romFilename);

@@ -78,6 +78,7 @@ void Chip8::loadFile(std::string romFilename)
     {
         std::cerr << "Unable to open file: " << romFilename << std::endl;
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CHIP-8 Emulator", (std::string("Unable to open ROM: ")+romFilename).c_str(), window);
+
         std::exit(2);
     }
     
@@ -96,6 +97,8 @@ void Chip8::loadFile(std::string romFilename)
     if (buffer == nullptr)
     {
         std::cout << "Unable to allocate memory" << '\n';
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to allocate memory for the file content", window);
+
         std::exit(2);
     }
     
@@ -106,6 +109,8 @@ void Chip8::loadFile(std::string romFilename)
     if (!copied)
     {
         std::cout << "Unable to copy to buffer" << '\n';
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to copy file content to buffer", window);
+
         std::exit(2);
     }
     
@@ -196,6 +201,8 @@ void Chip8::initVideo()
     if (!font)
     {
         std::cerr << "Unable to load font: " << TTF_GetError() << '\n';
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to load font", window);
+
         std::exit(2);
     }
 
@@ -473,6 +480,13 @@ void Chip8::displayDebugInfoIfInDebugMode()
     updateRenderer();
 }
 
+void Chip8::reportInvalidOpcode(uint8_t opcode)
+{
+    std::cerr << "Invalid opcode: " << opcode << '\n';
+
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, ("Invalid opcode: "+to_hex(opcode)).c_str(), window);
+}
+
 void Chip8::emulateCycle()
 {
     fetchOpcode();
@@ -506,7 +520,7 @@ void Chip8::emulateCycle()
                     break;
                     
                 default:
-                    std::cout << "UNKNOWN OPCODE STARTING WITH 0" << std::endl;
+                    reportInvalidOpcode(opcode);
                     break;
             }
             break;
@@ -614,7 +628,7 @@ void Chip8::emulateCycle()
                     break;
                 
                 default:
-                    std::cout << "UNKNOWN OPCODE STARTING WITH 8" << std::endl;
+                    reportInvalidOpcode(opcode);
                     break;
             }
             break;
@@ -710,7 +724,7 @@ void Chip8::emulateCycle()
                 }
                 
                 default:
-                    std::cout << "UNKNOWN OPCODE STARTING WITH E" << std::endl;
+                    reportInvalidOpcode(opcode);
                     break;
             }
         break;
@@ -834,13 +848,13 @@ void Chip8::emulateCycle()
                 }
                 
                 default:
-                    std::cout << "UNKNOWN OPCODE STARTING WITH F" << std::endl;
+                    reportInvalidOpcode(opcode);
                     break;
             }
         break;
             
         default:
-            std::cout << "Unknown opcode: " << opcode << std::endl;
+            reportInvalidOpcode(opcode);
             break;
     }
     
