@@ -55,13 +55,15 @@ constexpr uint8_t keyMapScancode[16]{
 
 Chip8::Chip8(const std::string &romFilename)
 {
-    
-    std::srand(std::time(nullptr));
-    std::rand();
+    std::srand(std::time(nullptr)); // initialize rand()
+    std::rand(); // drop the first result
     
     std::cout << '\n' << "----- setting up video -----" << std::endl;
     Chip8::initVideo();
+
+    // Load the font set to the memory
     Chip8::loadFontSet();
+
     std::cout << '\n' << "----- loading file -----" << std::endl;
     Chip8::loadFile(romFilename);
 }
@@ -122,7 +124,7 @@ void Chip8::loadFile(std::string romFilename)
         std::cout << static_cast<int>(buffer[i]) << ' ';
     std::cout << '\n' << "--- END OF BUFFER ---" << '\n';
     
-    
+    // Copy the data from the file buffer to the virtual memory
     for (int i{}; i < romSize; ++i)
     {
         memory[512+i] = buffer[i];
@@ -153,6 +155,7 @@ void Chip8::loadFontSet()
         std::cout << static_cast<int>(fontset[i]) << ' ';
     std::cout << '\n' << "--- END OF FONT SET ---" << '\n';
     
+    // copy the font set to the memory
     for (int i{}; i < 80; ++i)
     {
         memory[i] = fontset[i];
@@ -278,6 +281,8 @@ inline void Chip8::updateRenderer()
 
 void Chip8::clearRenderer()
 {
+    // Only clear the game output, so the debug info can be erased independently
+
     SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
     SDL_Rect rect{0, 0, 64*20*scale, 32*20*scale};
     SDL_RenderFillRect(renderer, &rect);
@@ -302,6 +307,7 @@ void Chip8::fetchOpcode()
         return;
     }
     
+    // We swap the upper and lower bits.
     // The opcode is 16 bits long, so we have to
     // shift the left part of the opcode and add the right part.
     opcode = ((memory[pc]<<8) | memory[pc+1]);
@@ -347,8 +353,8 @@ void Chip8::setPaused()
 	SDL_GetRenderDrawBlendMode(renderer, &originalBlendmode);
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+	// Make the window darker
 	SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 150);
-
 	SDL_RenderFillRect(renderer, &rect);
 
 	updateRenderer();
@@ -366,7 +372,7 @@ void Chip8::whenWindowResized(int width, int height)
 	scale = std::min(horizontalScale, verticalScale);
 
 	if (isDebugMode)
-	    scale *= 0.6;
+	    scale *= 0.6; // This way the debug info can fit in the window
 
 	SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 255);
 	SDL_RenderClear(renderer);
@@ -402,6 +408,7 @@ void Chip8::toggleFullscreen()
     else
         turnOffFullscreen();
 
+    // Render the frame buffer with the new scaling
     renderFrameBuffer();
 }
 

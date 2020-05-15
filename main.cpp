@@ -45,6 +45,7 @@ double frameDelay{};
 int main()
 {
     #ifdef NDEBUG
+        // Disconnect the stream buffer from cout.
         std::cout.rdbuf(nullptr);
     #endif
 
@@ -166,8 +167,12 @@ int main()
 
         if (wasPaused)
         {
+            // To make the pixels light again.
         	chip8.renderFrameBuffer();
+
         	wasPaused = false;
+
+        	// We don't need a redraw for a while
         	renderUpdateCountdown = 16.67;
         }
 

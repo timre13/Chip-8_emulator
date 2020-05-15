@@ -46,7 +46,7 @@ public:
     }
 
     // This is for the case when the emulator itself (not the ROM!) wants to get a register's value.
-    // This should be used in debug mode.
+    // This should be used by the register display in debug mode.
     uint8_t get(int index) const
     {
         return m_registers[index];
@@ -141,6 +141,7 @@ private:
     // We don't fill it with zeros, because the original implementation doesn't do so
     Framebuffer frameBuffer;
 
+    // rom file size in bytes
     int romSize;
 
     SDL_Window *window{nullptr};
