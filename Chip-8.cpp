@@ -452,6 +452,11 @@ void Chip8::clearDebugInfo()
     SDL_RenderFillRect(renderer, &rect);
 }
 
+void Chip8::clearIsReadingKeyStateFlag()
+{
+    isReadingKey = false;
+}
+
 void Chip8::displayDebugInfoIfInDebugMode()
 {
     if (!isDebugMode)
@@ -487,8 +492,6 @@ void Chip8::displayDebugInfoIfInDebugMode()
     if (isReadingKey)
     {
         renderText("Reading key state", 14, 20);
-
-        isReadingKey = false;
     }
 
     updateRenderer();

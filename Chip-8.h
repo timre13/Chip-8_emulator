@@ -204,6 +204,7 @@ public:
     uint32_t getWindowID();
 
     void clearLastRegisterOperationFlags();
+    void clearIsReadingKeyStateFlag();
 
     bool hasEnded{false}; // marks whether the program ended
     // Marks whether we need to redraw the framebuffer

@@ -177,6 +177,7 @@ int main()
         }
 
         chip8.clearLastRegisterOperationFlags();
+        chip8.clearIsReadingKeyStateFlag();
 
         chip8.emulateCycle();
         
