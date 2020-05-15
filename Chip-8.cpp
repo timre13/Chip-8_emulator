@@ -612,9 +612,11 @@ void Chip8::emulateCycle()
                 
                 case 6: // SHR Vx {, Vy}
                     std::cout << "SHR Vx {, Vy}" << std::endl;
+                    // Mark whether overflow occurs.
                     registers[0xF] = ((registers[(opcode & 0x0F00)>>8]) & 1);
-                    if (storeBitShiftResultInY)
-                        registers[(opcode & 0x00F0)>>4] = (registers[(opcode & 0x0F00)>>8] >> 1);
+
+                    if (storeBitShiftResultOfY)
+                        registers[(opcode & 0x0F00)>>8] = registers[(opcode & 0x00F0)>>4] >> 1;
                     else
                         registers[(opcode & 0x0F00)>>8] >>= 1;
                     break;
@@ -627,9 +629,11 @@ void Chip8::emulateCycle()
                 
                 case 0xE: // SHL Vx {, Vy}
                     std::cout << "SDL Vx, {, Vy}" << std::endl;
+                    // Mark whether overflow occurs.
                     registers[0xF] = (registers[((opcode & 0x0F00)>>8)] >> 7);
-                    if (storeBitShiftResultInY)
-                        registers[(opcode & 0x00F0)>>4] = (registers[(opcode & 0x0F00)>>8] << 1);
+
+                    if (storeBitShiftResultOfY)
+                        registers[(opcode & 0x0F00)>>8] = registers[(opcode & 0x00F0)>>4] << 1;
                     else
                         registers[(opcode & 0x0F00)>>8] <<= 1;
                     break;

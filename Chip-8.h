@@ -13,7 +13,7 @@
 
 #define TITLE "CHIP-8 Emulator"
 
-extern bool storeBitShiftResultInY;
+extern bool storeBitShiftResultOfY;
 extern bool incrementIAfterMemoryOperation;
 
 extern uint8_t bgColorR;

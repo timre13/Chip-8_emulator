@@ -9,10 +9,12 @@
 
 //------------------------------------------------------------------------------
 
-// This switch marks whether the result of the bit
-// shifts (8XY6 and 0x8XYE instructions) should be stored in Y or in X.
-// The original implementation stored the result in Y;
-bool storeBitShiftResultInY{true};
+
+// Marks whether the Y register's or the X register's value should
+// be stored when processing the 8xy6 or 8xyE instructions.
+// The old implementations used the Y register, the new ones use the X.
+// The result is always stored in the X register.
+bool storeBitShiftResultOfY{true};
 
 // This variable marks whether the I (index register) should be
 // incremented after reading from or writing
