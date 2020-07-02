@@ -122,6 +122,9 @@ int main()
 				case SDL_WINDOWEVENT:
 					if (event.window.windowID == chip8.getWindowID())
 					{
+					    chip8.renderFrameBuffer();
+					    chip8.displayDebugInfoIfInDebugMode();
+
 						switch (event.window.event)
 						{
 						case SDL_WINDOWEVENT_RESIZED:
