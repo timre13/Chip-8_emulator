@@ -122,7 +122,7 @@ private:
     // stack
     uint16_t stack[16]{};
     // stack pointer
-    uint8_t sp          = -1;
+    uint8_t sp          = 0;
     // registers
     Registers registers;
     // memory - 0x00 - 0xFFF

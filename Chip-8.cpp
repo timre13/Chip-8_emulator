@@ -532,8 +532,8 @@ void Chip8::emulateCycle()
                 
                 case 0x00EE: // RET
                     std::cout << "RET" << std::endl;
-                    pc = stack[sp];
-                    stack[sp] = 0;
+                    pc = stack[sp-1];
+                    stack[sp-1] = 0;
                     --sp;
                     break;
                     
@@ -551,7 +551,7 @@ void Chip8::emulateCycle()
         case 0x2000: // CALL
             std::cout << "CALL" << std::endl;
             ++sp;
-            stack[sp] = pc;
+            stack[sp-1] = pc;
             pc = (opcode & 0x0FFF);
             break;
             
