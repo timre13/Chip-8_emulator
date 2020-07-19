@@ -533,6 +533,7 @@ void Chip8::emulateCycle()
                 case 0x00EE: // RET
                     std::cout << "RET" << std::endl;
                     pc = stack[sp];
+                    stack[sp] = 0;
                     --sp;
                     break;
                     
