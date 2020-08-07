@@ -22,7 +22,7 @@ private:
     
     int chosenFileI{};
 
-    void getFileList(std::string directory);
+    void getFileList(const std::string &directory);
     
     void drawFileList();
     void drawTitle(const std::string &title);
@@ -31,7 +31,7 @@ private:
     void deinit();
 
 public:
-    FileChooser(std::string directory);
+    FileChooser(const std::string &directory);
     
     std::string get();
 };

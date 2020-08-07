@@ -2,7 +2,7 @@
 #include <cmath>
 #include <stdint.h>
 
-void FileChooser::getFileList(std::string directory)
+void FileChooser::getFileList(const std::string &directory)
 {
     auto files{std::filesystem::recursive_directory_iterator{
         directory,
@@ -65,7 +65,7 @@ void FileChooser::drawSelector()
     SDL_RenderFillRect(renderer, &selectorRect);
 }
 
-FileChooser::FileChooser(std::string directory)
+FileChooser::FileChooser(const std::string &directory)
 {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
