@@ -491,7 +491,7 @@ void Chip8::reportInvalidOpcode(uint8_t opcode)
 {
     std::cerr << "Invalid opcode: " << opcode << '\n';
 
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, ("Invalid opcode: "+to_hex(opcode)).c_str(), window);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, TITLE, ("Invalid opcode: "+to_hex(opcode)).c_str(), window);
 }
 
 void Chip8::emulateCycle()
