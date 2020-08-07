@@ -4,10 +4,11 @@ CHIP-8 emulator with debug view. Written in C++ using SDL2.
 ![PONG](./readme/PONG.png)
 
 ## Compiling and running
-Requires make, SDL2 and SDL2_ttf
+Requires SDL2, SDL2_ttf and ncurses
 
+On a Debian-based system they can be installed by running the command:
 ~~~
-sudo apt install make libsdl2-dev libsdl2-ttf-dev
+sudo apt install libsdl2-dev libsdl2-ttf-dev libncurses-dev
 ~~~
 
 ## Usage
