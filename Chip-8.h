@@ -1,6 +1,8 @@
 #ifndef CHIP8_H
 #define CHIP8_H
 
+#define SDL_MAIN_HANDLED
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
@@ -188,7 +190,7 @@ public:
     void emulateCycle();
     void renderFrameBuffer();
     
-    void updateRenderer();
+    inline void updateRenderer() { SDL_RenderPresent(renderer); }
     
     void setDebugTitle();
     void setPaused();

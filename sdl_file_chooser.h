@@ -7,7 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <SDL2/SDL.h>
-#include "SDL_ttf.h"
+#include <SDL2/SDL_ttf.h>
 
 #define FILECHOOSER_TITLE "Choose a file"
 

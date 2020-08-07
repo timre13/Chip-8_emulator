@@ -1,4 +1,3 @@
-#include <SDL2/SDL.h>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -272,11 +271,6 @@ void Chip8::renderFrameBuffer()
     updateRenderer();
     
     renderFlag = false;
-}
-
-inline void Chip8::updateRenderer()
-{
-    SDL_RenderPresent(renderer);
 }
 
 void Chip8::clearRenderer()

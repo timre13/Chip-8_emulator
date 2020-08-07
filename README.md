@@ -6,9 +6,14 @@ CHIP-8 emulator with debug view. Written in C++ using SDL2.
 ## Compiling and running
 Requires SDL2, SDL2_ttf and ncurses
 
+### Linux
 On a Debian-based system they can be installed by running the command:
 ~~~
 sudo apt install libsdl2-dev libsdl2-ttf-dev libncurses-dev
+~~~
+Compiling:
+~~~
+g++ *.cpp -std=c++17 -lstdc++fs -lSDL2 -lSDL2_ttf -lncurses -O3 -o chip8emu
 ~~~
 
 ## Usage
