@@ -31,45 +31,49 @@ class Registers
 {
 private:
     uint8_t m_registers[16]{};
-    uint8_t m_oldRegisterValues[16]{};
 
-    // For debug mode
-    bool isReadRegister[16]{};
+    bool    m_isRegisterWritten[16]{};
+    bool    m_isRegisterRead[16]{};
 
 public:
-    uint8_t& operator[](int index)
+    uint8_t get(int index, bool isInternal=false)
     {
         assert(index >= 0);
         assert(index < 16);
 
-        isReadRegister[index] = true;
+        if (!isInternal)
+            m_isRegisterRead[index] = true;
 
         return m_registers[index];
     }
 
-    // This is for the case when the emulator itself (not the ROM!) wants to get a register's value.
-    // This should be used by the register display in debug mode.
-    uint8_t get(int index) const
+    void set(int index, uint8_t value, bool isInternal=false)
     {
-        return m_registers[index];
+        assert(index >= 0);
+        assert(index < 16);
+
+        if (!isInternal)
+            m_isRegisterWritten[index] = true;
+
+        m_registers[index] = value;
     }
 
-    uint8_t getIsReadRegister(int index)
+    void clearReadWrittenFlags()
     {
-         return isReadRegister[index];
+        // Clear m_isRegisterWritten
+        memset(m_isRegisterWritten, false, sizeof(m_isRegisterWritten));
+        // Clear m_isRegisterRead
+        memset(m_isRegisterRead, false, sizeof(m_isRegisterRead));
     }
 
-    uint8_t getIsWrittenRegister(int index)
+    bool getIsRegisterWritten(int index)
     {
-        return m_oldRegisterValues[index] != m_registers[index];
+        return m_isRegisterWritten[index];
     }
 
-    void clearLastRegisterOperationFlags()
+    bool getIsRegisterRead(int index)
     {
-        // Clear isWrittenRegister
-        memcpy(m_oldRegisterValues, m_registers, sizeof(m_registers));
-        // Clear lastReadRegister
-        memset(isReadRegister, false, sizeof(isReadRegister));
+        return m_isRegisterRead[index];
     }
 };
 

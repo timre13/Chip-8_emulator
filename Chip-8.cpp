@@ -380,7 +380,7 @@ uint32_t Chip8::getWindowID()
 
 void Chip8::clearLastRegisterOperationFlags()
 {
-    registers.clearLastRegisterOperationFlags();
+    registers.clearReadWrittenFlags();
 }
 
 void Chip8::turnOnFullscreen()
@@ -471,13 +471,13 @@ void Chip8::displayDebugInfoIfInDebugMode()
 
     for (int i{}; i < 16; ++i)
     {
-        if (registers.getIsWrittenRegister(i))
-            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i)), 1+i%8, 20+i/8*12, {255, 0, 0, 255});
+        if (registers.getIsRegisterRead(i))
+            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i, true)), 1+i%8, 20+i/8*12, {255, 0, 0, 255});
         // If the current register is the last written, ignore if it was read.
-        else if (registers.getIsReadRegister(i))
-            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i)), 1+i%8, 20+i/8*12, {0, 255, 0, 255});
+        else if (registers.getIsRegisterWritten(i))
+            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i, true)), 1+i%8, 20+i/8*12, {0, 255, 0, 255});
         else
-            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i)), 1+i%8, 20+i/8*12);
+            renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i, true)), 1+i%8, 20+i/8*12);
     }
 
     renderText("DT: "       + to_hex(delayTimer),   10, 20);
@@ -551,30 +551,30 @@ void Chip8::emulateCycle()
             
         case 0x3000: // SE
             std::cout << "SE" << std::endl;
-            if (registers[(opcode & 0x0F00)>>8] == (opcode & 0x00FF))
+            if (registers.get((opcode & 0x0F00)>>8) == (opcode & 0x00FF))
                 pc += 2;
             break;
             
         case 0x4000: // SNE
             std::cout << "SNE" << std::endl;
-            if (registers[(opcode & 0x0F00)>>8] != (opcode & 0x00FF))
+            if (registers.get((opcode & 0x0F00)>>8) != (opcode & 0x00FF))
                 pc += 2;
             break;
         
         case 0x5000: // SE Vx, Vy
             std::cout << "SE Vx, Vy" << std::endl;
-            if (registers[(opcode & 0x0F00)>>8] == registers[(opcode & 0x00F0)>>4])
+            if (registers.get((opcode & 0x0F00)>>8) == registers.get((opcode & 0x00F0)>>4))
                 pc += 2;
             break;
             
         case 0x6000: // LD Vx, byte
             std::cout << "LD Vx, byte" << std::endl;
-            registers[(opcode & 0x0F00)>>8] = (opcode & 0x00FF);
+            registers.set((opcode & 0x0F00)>>8, opcode & 0x00FF);
             break;
         
         case 0x7000: // ADD Vx, byte
             std::cout << "ADD Vx, byte" << std::endl;
-            registers[(opcode & 0x0F00)>>8] += (opcode & 0x00FF);
+            registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) + (opcode & 0x00FF));
             break;
         
         case 0x8000:
@@ -582,65 +582,68 @@ void Chip8::emulateCycle()
             {
                 case 0: // LD Vx, Vy
                     std::cout << "LD Vx, Vy" << std::endl;
-                    registers[(opcode & 0x0F00)>>8] = registers[(opcode & 0x00F0)>>4];
+                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4));
                     break;
                 
                 case 1: // OR Vx, Vy
                     std::cout << "OR Vx, Vy" << std::endl;
-                    registers[(opcode & 0x0F00)>>8] |= registers[(opcode & 0x00F0)>>4];
+                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) | registers.get((opcode & 0x00F0)>>4));
                     break;
                 
                 case 2: // AND Vx, Vy
                     std::cout << "AND Vx, Vy" << std::endl;
-                    registers[(opcode & 0x0F00)>>8] &= registers[(opcode & 0x00F0)>>4];
+                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) & registers.get((opcode & 0x00F0)>>4));
                     break;
                 
                 case 3: // XOR Vx, Vy
                     std::cout << "XOR Vx, Vy" << std::endl;
-                    registers[(opcode & 0x0F00)>>8] ^= registers[(opcode & 0x00F0)>>4];
+                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) ^ registers.get((opcode & 0x00F0)>>4));
                     break;
                 
                 case 4: // ADD Vx, Vy
                     std::cout << "ADD Vx, Vy" << std::endl;
-                    registers[(opcode & 0x0F00)>>8] += registers[(opcode & 0x00F0)>>4];
-                    if (registers[(opcode & 0x00F0)>>4] > (0xFF - registers[(opcode && 0x0F00)>>8]))
-                        registers[0xF] = 1;
+                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) + registers.get((opcode & 0x00F0)>>4));
+
+                    if (registers.get((opcode & 0x00F0)>>4) > (0xFF - registers.get((opcode && 0x0F00)>>8)))
+                        registers.set(0xF, 1);
                     else
-                        registers[0xF] = 0;
+                        registers.set(0xF, 0);
                     break;
                 
                 case 5: // SUB Vx, Vy
                     std::cout << "SUB Vx, Vy" << std::endl;
-                    registers[0xF] = !(registers[(opcode & 0x0F00)>>8] < registers[(opcode & 0x00F0)>>4]);
-                    registers[(opcode & 0x0F00)>>8] -= registers[(opcode & 0x00F0)>>4];
+                    registers.set(0xF, !(registers.get((opcode & 0x0F00)>>8) < registers.get((opcode & 0x00F0)>>4)));
+
+                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) - registers.get((opcode & 0x00F0)>>4));
                     break;
                 
                 case 6: // SHR Vx {, Vy}
                     std::cout << "SHR Vx {, Vy}" << std::endl;
                     // Mark whether overflow occurs.
-                    registers[0xF] = ((registers[(opcode & 0x0F00)>>8]) & 1);
+                    registers.set(0xF, registers.get((opcode & 0x0F00)>>8) & 1);
 
                     if (storeBitShiftResultOfY)
-                        registers[(opcode & 0x0F00)>>8] = registers[(opcode & 0x00F0)>>4] >> 1;
+                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4) >> 1);
                     else
-                        registers[(opcode & 0x0F00)>>8] >>= 1;
+                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) >> 1);
                     break;
                 
                 case 7: // SUBN Vx, Vy
                     std::cout << "SUBN Vx, Vy" << std::endl;
-                    registers[0xF] = !(registers[(opcode & 0x0F00)>>8] > registers[(opcode & 0x00F0)>>4]);
-                    registers[(opcode & 0x0F00)>>8] = (registers[(opcode & 0x00F0)>>4] - registers[(opcode & 0x0F00)>>8]);
+                    registers.set(0xF, !(registers.get((opcode & 0x0F00)>>8) > registers.get((opcode & 0x00F0)>>4)));
+
+                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4) - registers.get((opcode & 0x0F00)>>8));
                     break;
                 
                 case 0xE: // SHL Vx {, Vy}
                     std::cout << "SDL Vx, {, Vy}" << std::endl;
                     // Mark whether overflow occurs.
-                    registers[0xF] = (registers[((opcode & 0x0F00)>>8)] >> 7);
+                    registers.set(0xF, (registers.get((opcode & 0x0F00)>>8) >> 7));
 
                     if (storeBitShiftResultOfY)
-                        registers[(opcode & 0x0F00)>>8] = registers[(opcode & 0x00F0)>>4] << 1;
+                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4) << 1);
                     else
-                        registers[(opcode & 0x0F00)>>8] <<= 1;
+                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) << 1);
                     break;
                 
                 default:
@@ -651,8 +654,8 @@ void Chip8::emulateCycle()
         
         case 0x9000: // SNE Vx, Vy
             std::cout << "SNE Vx, Vy" << std::endl;
-            if (registers[(opcode & 0x0F00)>>8] !=
-                registers[(opcode & 0x00F0)>>4])
+            if (registers.get((opcode & 0x0F00)>>8) !=
+                registers.get((opcode & 0x00F0)>>4))
                 pc += 2;
             break;
         
@@ -663,23 +666,23 @@ void Chip8::emulateCycle()
         
         case 0xB000: // JP V0, addr
             std::cout << "JP V0, addr" << std::endl;
-            pc = (registers[0] + (opcode & 0x0FFF));
+            pc = (registers.get(0) + (opcode & 0x0FFF));
             break;
         
         case 0xC000: // RND Vx, byte
             std::cout << "RND Vx, byte" << std::endl;
-            registers[(opcode & 0x0F00)>>8] = ((opcode & 0x00FF) & static_cast<uint8_t>(std::rand()));
+            registers.set((opcode & 0x0F00)>>8, (opcode & 0x00FF) & static_cast<uint8_t>(std::rand()));
             break;
         
         case 0xD000: // DRW Vx, Vy, nibble
         {
             std::cout << "DRW Vx, Vy, nibble" << std::endl;
             
-            int x{registers[(opcode & 0x0F00) >> 8]};
-            int y{registers[(opcode & 0x00F0) >> 4]};
+            int x{registers.get((opcode & 0x0F00) >> 8)};
+            int y{registers.get((opcode & 0x00F0) >> 4)};
             int height{opcode & 0x000F};
             
-            registers[0xF] = 0;
+            registers.set(0xF, 0);
             
             for (int cy{}; cy < height; ++cy)
             {
@@ -694,7 +697,7 @@ void Chip8::emulateCycle()
                         int index{(x + cx) + (y + cy)*64};
                         
                         if (frameBuffer[index])
-                            registers[0xF] = 1;
+                            registers.set(0xF, 1);
                             
                         frameBuffer[index] ^= 1;
                     }
@@ -717,9 +720,9 @@ void Chip8::emulateCycle()
 
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
-                    std::cout << "KEY: " << keyState[keyMap[registers[(opcode & 0x0F00)>>8]]] << std::endl;
+                    std::cout << "KEY: " << keyState[keyMap[registers.get((opcode & 0x0F00)>>8)]] << std::endl;
                
-                    if (keyState[keyMapScancode[registers[(opcode & 0x0F00)>>8]]])
+                    if (keyState[keyMapScancode[registers.get((opcode & 0x0F00)>>8)]])
                         pc += 2;
                     break;
                 }
@@ -732,9 +735,9 @@ void Chip8::emulateCycle()
 
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
-                    std::cout << "KEY: " << keyState[keyMap[registers[(opcode & 0x0F00)>>8]]] << std::endl;
+                    std::cout << "KEY: " << keyState[keyMap[registers.get((opcode & 0x0F00)>>8)]] << std::endl;
                
-                    if (!(keyState[keyMapScancode[registers[(opcode & 0x0F00)>>8]]]))
+                    if (!(keyState[keyMapScancode[registers.get((opcode & 0x0F00)>>8)]]))
                         pc += 2;
                     break;
                 }
@@ -750,7 +753,7 @@ void Chip8::emulateCycle()
             {
                 case 0x07: // LD Vx, DT
                     std::cout << "LD Vx, DT" << std::endl;
-                    registers[(opcode & 0x0F00)>>8] = delayTimer;
+                    registers.set((opcode & 0x0F00)>>8, delayTimer);
                     break;
                 
                 case 0x0A: // LD Vx, K
@@ -799,7 +802,7 @@ void Chip8::emulateCycle()
                     }
                     while (!hasValidKeyPressed); // Loop until a valid keypress
                     
-                    registers[(opcode & 0x0F00)>>8] = pressedKey;
+                    registers.set((opcode & 0x0F00)>>8, pressedKey);
                     
                     std::cout << "Loaded key: " << static_cast<int>(pressedKey) << std::endl;
                     
@@ -808,29 +811,29 @@ void Chip8::emulateCycle()
                 
                 case 0x15: // LD DT, Vx
                     std::cout << "LD DT, Vx" << std::endl;
-                    delayTimer = registers[(opcode & 0x0F00)>>8];
+                    delayTimer = registers.get((opcode & 0x0F00)>>8);
                     break;
                 
                 case 0x18: // LD ST, Vx
                     std::cout << "LD ST, Vx" << std::endl;
-                    soundTimer = registers[(opcode & 0x0F00)>>8];
+                    soundTimer = registers.get((opcode & 0x0F00)>>8);
                     break;
                 
                 case 0x1E: // ADD I, Vx
                     std::cout << "ADD I, Vx" << std::endl;
-                    I += registers[(opcode & 0x0F00)>>8];
+                    I += registers.get((opcode & 0x0F00)>>8);
                     break;
                 
                 case 0x29: // LD F, Vx
                     std::cout << "FD, F, Vx" << std::endl;
-                    std::cout << "FONT LOADED: " << registers[(opcode & 0x0F00)>>8] << std::endl;
-                    I = registers[(opcode & 0x0F00)>>8]*5;
+                    I = registers.get((opcode & 0x0F00)>>8)*5;
+                    std::cout << "FONT LOADED: " << registers.get((opcode & 0x0F00)>>8) << std::endl;
                     break;
                 
                 case 0x33: // LD B, Vx
                 {
                     std::cout << "LD B, Vx" << std::endl;
-                    uint8_t number{registers[(opcode & 0x0F00)>>8]};
+                    uint8_t number{registers.get((opcode & 0x0F00)>>8)};
                     memory[I] = (number / 100);
                     memory[I+1] = ((number / 10) % 10);
                     memory[I+2] = (number % 10);
@@ -843,7 +846,7 @@ void Chip8::emulateCycle()
                     uint8_t x{static_cast<uint8_t>((opcode & 0x0F00)>>8)};
                         
                     for (uint8_t i{}; i <= x; ++i)
-                        memory[I + i] = registers[i];
+                        memory[I + i] = registers.get(i);
                     
                     if (incrementIAfterMemoryOperation)
                         I += (x + 1);
@@ -856,7 +859,7 @@ void Chip8::emulateCycle()
                     uint8_t x{static_cast<uint8_t>((opcode & 0x0F00)>>8)};
                     
                     for (uint8_t i{}; i <= x; ++i)
-                        registers[i] = memory[I + i];
+                        registers.set(i, memory[I + i]);
                     
                     if (incrementIAfterMemoryOperation)
                         I += (x + 1);
