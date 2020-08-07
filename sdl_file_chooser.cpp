@@ -1,16 +1,29 @@
 #include "sdl_file_chooser.h"
 #include <cmath>
 #include <stdint.h>
+#include <string>
 
-void FileChooser::getFileList(const std::string &directory)
+void FileChooser::getFileList(const std::string &directory, const std::string &extension)
 {
     auto files{std::filesystem::recursive_directory_iterator{
         directory,
         std::filesystem::directory_options::skip_permission_denied}};
     
+    bool shouldFilter{extension.compare("*") != 0};
+
     for (auto &file : files)
     {
-        if (std::filesystem::is_regular_file(file))
+        std::string fileExtension{"*"};
+        if (shouldFilter)
+        {
+            size_t dotPos{std::string(file.path()).find_last_of('.')};
+            fileExtension = std::string(file.path()).substr(dotPos == std::string::npos ? std::string::npos : dotPos+1);
+        }
+
+        std::cout << fileExtension << '\n';
+        std::cout.flush();
+
+        if (std::filesystem::is_regular_file(file) && (fileExtension.compare(extension) == 0))
             fileList.push_back(file.path().c_str());
     }
     
@@ -65,7 +78,7 @@ void FileChooser::drawSelector()
     SDL_RenderFillRect(renderer, &selectorRect);
 }
 
-FileChooser::FileChooser(const std::string &directory)
+FileChooser::FileChooser(const std::string &directory, const std::string &extension/*="*"*/)
 {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -96,7 +109,7 @@ FileChooser::FileChooser(const std::string &directory)
 
     drawTitle("Loading...");
     SDL_RenderPresent(renderer);
-    getFileList(directory);
+    getFileList(directory, extension);
 
     bool isRunning{true};
     while (isRunning)

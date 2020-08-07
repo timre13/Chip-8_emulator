@@ -49,7 +49,7 @@ int main()
         std::cout.rdbuf(nullptr);
     #endif
 
-    FileChooser fileChooser{"./roms"};
+    FileChooser fileChooser{"./roms", "ch8"};
     std::string romFilename{fileChooser.get()};
     
     // If the user canceled the file selection, quit.

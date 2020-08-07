@@ -22,18 +22,19 @@ private:
     
     int chosenFileI{};
 
-    void getFileList(const std::string &directory);
+public:
+    FileChooser(const std::string &directory, const std::string &extension="*");
+
+    std::string get();
+
+private:
+    void getFileList(const std::string &directory, const std::string &extension);
     
     void drawFileList();
     void drawTitle(const std::string &title);
     void drawSelector();
 
     void deinit();
-
-public:
-    FileChooser(const std::string &directory);
-    
-    std::string get();
 };
 
 #endif // SDL_FILE_CHOOSER
