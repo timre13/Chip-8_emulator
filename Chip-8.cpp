@@ -219,6 +219,8 @@ void Chip8::initVideo()
     SDL_RenderClear(renderer);
     updateRenderer();
 
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
     SDL_SetWindowMinimumSize(window, 200, 100);
 }
 
@@ -343,17 +345,11 @@ void Chip8::setPaused()
 				  static_cast<int>(std::ceil(32*20*scale))
 	};
 
-	SDL_BlendMode originalBlendmode{};
-	SDL_GetRenderDrawBlendMode(renderer, &originalBlendmode);
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
 	// Make the window darker
 	SDL_SetRenderDrawColor(renderer, bgColorR, bgColorG, bgColorB, 150);
 	SDL_RenderFillRect(renderer, &rect);
 
 	updateRenderer();
-
-	SDL_SetRenderDrawBlendMode(renderer, originalBlendmode);
 }
 
 void Chip8::whenWindowResized(int width, int height)
