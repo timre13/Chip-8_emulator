@@ -469,7 +469,6 @@ void Chip8::displayDebugInfoIfInDebugMode()
     {
         if (registers.getIsRegisterRead(i))
             renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i, true)), 1+i%8, 20+i/8*12, {255, 0, 0, 255});
-        // If the current register is the last written, ignore if it was read.
         else if (registers.getIsRegisterWritten(i))
             renderText(to_hex(i, 1) + ": " + to_hex(registers.get(i, true)), 1+i%8, 20+i/8*12, {0, 255, 0, 255});
         else
