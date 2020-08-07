@@ -131,7 +131,7 @@ private:
     uint8_t sp          = 0;
     // registers
     Registers registers;
-    // memory - 0x00 - 0xFFF
+    // memory - 0x00 - 0xfff
     uint8_t memory[0xfff+1]{};
     // program counter - the programs start at 0x200
     uint16_t pc         = 0x200;

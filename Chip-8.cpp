@@ -114,7 +114,7 @@ void Chip8::loadFile(std::string romFilename)
             std::cout << '\n' << "--- START OF PROGRAM ---" << '\n';
         if ((i) == (romSize+511))
             std::cout << '\n' << "--- END OF PROGRAM ---" << '\n';
-        if (i == 0xFFF)
+        if (i == 0xfff)
             std::cout << '\n' << "--- END OF MEMORY ---" << '\n';
     }
     std::cout << '\n';
@@ -261,7 +261,7 @@ void Chip8::clearRenderer()
 
 void Chip8::fetchOpcode()
 {
-    // Catch the access out of the valid memory address range (0x00 - 0xFFF)
+    // Catch the access out of the valid memory address range (0x00 - 0xfff)
     assert(pc <= 0xfff);
     
     if (pc > 0xfff)
@@ -471,23 +471,23 @@ void Chip8::emulateCycle()
 
     std::cout << std::hex;
 
-    switch (opcode & 0xF000)
+    switch (opcode & 0xf000)
     {
         case 0x0000:
-            switch (opcode & 0x0FFF)
+            switch (opcode & 0x0fff)
             {
                 case 0x0000:
                     std::cout << "NOP" << std::endl;
                     break;
                     
-                case 0x00E0: // CLS
+                case 0x00e0: // CLS
                     std::cout << "CLS" << std::endl;
                     for (int i{}; i < 64*32; ++i)
                         frameBuffer[i] = 0;
                     renderFlag = true;
                     break;
                 
-                case 0x00EE: // RET
+                case 0x00ee: // RET
                     std::cout << "RET" << std::endl;
                     pc = stack[sp-1];
                     stack[sp-1] = 0;
@@ -502,111 +502,111 @@ void Chip8::emulateCycle()
             
         case 0x1000: // JMP
             std::cout << "JMP" << std::endl;
-            pc = opcode & 0x0FFF;
+            pc = opcode & 0x0fff;
             break;
             
         case 0x2000: // CALL
             std::cout << "CALL" << std::endl;
             ++sp;
             stack[sp-1] = pc;
-            pc = (opcode & 0x0FFF);
+            pc = (opcode & 0x0fff);
             break;
             
         case 0x3000: // SE
             std::cout << "SE" << std::endl;
-            if (registers.get((opcode & 0x0F00)>>8) == (opcode & 0x00FF))
+            if (registers.get((opcode & 0x0f00)>>8) == (opcode & 0x00ff))
                 pc += 2;
             break;
             
         case 0x4000: // SNE
             std::cout << "SNE" << std::endl;
-            if (registers.get((opcode & 0x0F00)>>8) != (opcode & 0x00FF))
+            if (registers.get((opcode & 0x0f00)>>8) != (opcode & 0x00ff))
                 pc += 2;
             break;
         
         case 0x5000: // SE Vx, Vy
             std::cout << "SE Vx, Vy" << std::endl;
-            if (registers.get((opcode & 0x0F00)>>8) == registers.get((opcode & 0x00F0)>>4))
+            if (registers.get((opcode & 0x0f00)>>8) == registers.get((opcode & 0x00f0)>>4))
                 pc += 2;
             break;
             
         case 0x6000: // LD Vx, byte
             std::cout << "LD Vx, byte" << std::endl;
-            registers.set((opcode & 0x0F00)>>8, opcode & 0x00FF);
+            registers.set((opcode & 0x0f00)>>8, opcode & 0x00ff);
             break;
         
         case 0x7000: // ADD Vx, byte
             std::cout << "ADD Vx, byte" << std::endl;
-            registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) + (opcode & 0x00FF));
+            registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) + (opcode & 0x00ff));
             break;
         
         case 0x8000:
-            switch (opcode & 0x000F)
+            switch (opcode & 0x000f)
             {
                 case 0: // LD Vx, Vy
                     std::cout << "LD Vx, Vy" << std::endl;
-                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4));
+                    registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x00f0)>>4));
                     break;
                 
                 case 1: // OR Vx, Vy
                     std::cout << "OR Vx, Vy" << std::endl;
-                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) | registers.get((opcode & 0x00F0)>>4));
+                    registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) | registers.get((opcode & 0x00f0)>>4));
                     break;
                 
                 case 2: // AND Vx, Vy
                     std::cout << "AND Vx, Vy" << std::endl;
-                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) & registers.get((opcode & 0x00F0)>>4));
+                    registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) & registers.get((opcode & 0x00f0)>>4));
                     break;
                 
                 case 3: // XOR Vx, Vy
                     std::cout << "XOR Vx, Vy" << std::endl;
-                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) ^ registers.get((opcode & 0x00F0)>>4));
+                    registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) ^ registers.get((opcode & 0x00f0)>>4));
                     break;
                 
                 case 4: // ADD Vx, Vy
                     std::cout << "ADD Vx, Vy" << std::endl;
-                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) + registers.get((opcode & 0x00F0)>>4));
+                    registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) + registers.get((opcode & 0x00f0)>>4));
 
-                    if (registers.get((opcode & 0x00F0)>>4) > (0xFF - registers.get((opcode && 0x0F00)>>8)))
-                        registers.set(0xF, 1);
+                    if (registers.get((opcode & 0x00f0)>>4) > (0xff - registers.get((opcode && 0x0f00)>>8)))
+                        registers.set(0xf, 1);
                     else
-                        registers.set(0xF, 0);
+                        registers.set(0xf, 0);
                     break;
                 
                 case 5: // SUB Vx, Vy
                     std::cout << "SUB Vx, Vy" << std::endl;
-                    registers.set(0xF, !(registers.get((opcode & 0x0F00)>>8) < registers.get((opcode & 0x00F0)>>4)));
+                    registers.set(0xf, !(registers.get((opcode & 0x0f00)>>8) < registers.get((opcode & 0x00f0)>>4)));
 
-                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) - registers.get((opcode & 0x00F0)>>4));
+                    registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) - registers.get((opcode & 0x00f0)>>4));
                     break;
                 
                 case 6: // SHR Vx {, Vy}
                     std::cout << "SHR Vx {, Vy}" << std::endl;
                     // Mark whether overflow occurs.
-                    registers.set(0xF, registers.get((opcode & 0x0F00)>>8) & 1);
+                    registers.set(0xf, registers.get((opcode & 0x0f00)>>8) & 1);
 
                     if (storeBitShiftResultOfY)
-                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4) >> 1);
+                        registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x00f0)>>4) >> 1);
                     else
-                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) >> 1);
+                        registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) >> 1);
                     break;
                 
                 case 7: // SUBN Vx, Vy
                     std::cout << "SUBN Vx, Vy" << std::endl;
-                    registers.set(0xF, !(registers.get((opcode & 0x0F00)>>8) > registers.get((opcode & 0x00F0)>>4)));
+                    registers.set(0xf, !(registers.get((opcode & 0x0f00)>>8) > registers.get((opcode & 0x00f0)>>4)));
 
-                    registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4) - registers.get((opcode & 0x0F00)>>8));
+                    registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x00f0)>>4) - registers.get((opcode & 0x0f00)>>8));
                     break;
                 
-                case 0xE: // SHL Vx {, Vy}
+                case 0xe: // SHL Vx {, Vy}
                     std::cout << "SDL Vx, {, Vy}" << std::endl;
                     // Mark whether overflow occurs.
-                    registers.set(0xF, (registers.get((opcode & 0x0F00)>>8) >> 7));
+                    registers.set(0xf, (registers.get((opcode & 0x0f00)>>8) >> 7));
 
                     if (storeBitShiftResultOfY)
-                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x00F0)>>4) << 1);
+                        registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x00f0)>>4) << 1);
                     else
-                        registers.set((opcode & 0x0F00)>>8, registers.get((opcode & 0x0F00)>>8) << 1);
+                        registers.set((opcode & 0x0f00)>>8, registers.get((opcode & 0x0f00)>>8) << 1);
                     break;
                 
                 default:
@@ -617,35 +617,35 @@ void Chip8::emulateCycle()
         
         case 0x9000: // SNE Vx, Vy
             std::cout << "SNE Vx, Vy" << std::endl;
-            if (registers.get((opcode & 0x0F00)>>8) !=
-                registers.get((opcode & 0x00F0)>>4))
+            if (registers.get((opcode & 0x0f00)>>8) !=
+                registers.get((opcode & 0x00f0)>>4))
                 pc += 2;
             break;
         
-        case 0xA000: // LD I, addr
+        case 0xa000: // LD I, addr
             std::cout << "LD I, addr" << std::endl;
-            I  = (opcode & 0x0FFF);
+            I  = (opcode & 0x0fff);
             break;
         
-        case 0xB000: // JP V0, addr
+        case 0xb000: // JP V0, addr
             std::cout << "JP V0, addr" << std::endl;
-            pc = (registers.get(0) + (opcode & 0x0FFF));
+            pc = (registers.get(0) + (opcode & 0x0fff));
             break;
         
-        case 0xC000: // RND Vx, byte
+        case 0xc000: // RND Vx, byte
             std::cout << "RND Vx, byte" << std::endl;
-            registers.set((opcode & 0x0F00)>>8, (opcode & 0x00FF) & static_cast<uint8_t>(std::rand()));
+            registers.set((opcode & 0x0f00)>>8, (opcode & 0x00ff) & static_cast<uint8_t>(std::rand()));
             break;
         
-        case 0xD000: // DRW Vx, Vy, nibble
+        case 0xd000: // DRW Vx, Vy, nibble
         {
             std::cout << "DRW Vx, Vy, nibble" << std::endl;
             
-            int x{registers.get((opcode & 0x0F00) >> 8)};
-            int y{registers.get((opcode & 0x00F0) >> 4)};
-            int height{opcode & 0x000F};
+            int x{registers.get((opcode & 0x0f00) >> 8)};
+            int y{registers.get((opcode & 0x00f0) >> 4)};
+            int height{opcode & 0x000f};
             
-            registers.set(0xF, 0);
+            registers.set(0xf, 0);
             
             for (int cy{}; cy < height; ++cy)
             {
@@ -660,7 +660,7 @@ void Chip8::emulateCycle()
                         int index{(x + cx) + (y + cy)*64};
                         
                         if (frameBuffer[index])
-                            registers.set(0xF, 1);
+                            registers.set(0xf, 1);
                             
                         frameBuffer[index] ^= 1;
                     }
@@ -672,10 +672,10 @@ void Chip8::emulateCycle()
             break;
         }
         
-        case 0xE000:
-            switch (opcode & 0x00FF)
+        case 0xe000:
+            switch (opcode & 0x00ff)
             {
-                case 0x9E: // SKP Vx
+                case 0x9e: // SKP Vx
                 {
                     std::cout << "SKP Vx" << std::endl;
                     
@@ -683,14 +683,14 @@ void Chip8::emulateCycle()
 
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
-                    std::cout << "KEY: " << keyState[keyMap[registers.get((opcode & 0x0F00)>>8)]] << std::endl;
+                    std::cout << "KEY: " << keyState[keyMap[registers.get((opcode & 0x0f00)>>8)]] << std::endl;
                
-                    if (keyState[keyMapScancode[registers.get((opcode & 0x0F00)>>8)]])
+                    if (keyState[keyMapScancode[registers.get((opcode & 0x0f00)>>8)]])
                         pc += 2;
                     break;
                 }
                 
-                case 0xA1: // SKNP Vx
+                case 0xa1: // SKNP Vx
                 {
                     std::cout << "SKNP Vx" << std::endl;
                     
@@ -698,9 +698,9 @@ void Chip8::emulateCycle()
 
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
-                    std::cout << "KEY: " << keyState[keyMap[registers.get((opcode & 0x0F00)>>8)]] << std::endl;
+                    std::cout << "KEY: " << keyState[keyMap[registers.get((opcode & 0x0f00)>>8)]] << std::endl;
                
-                    if (!(keyState[keyMapScancode[registers.get((opcode & 0x0F00)>>8)]]))
+                    if (!(keyState[keyMapScancode[registers.get((opcode & 0x0f00)>>8)]]))
                         pc += 2;
                     break;
                 }
@@ -711,15 +711,15 @@ void Chip8::emulateCycle()
             }
         break;
         
-        case 0xF000:
-            switch (opcode & 0x00FF)
+        case 0xf000:
+            switch (opcode & 0x00ff)
             {
                 case 0x07: // LD Vx, DT
                     std::cout << "LD Vx, DT" << std::endl;
-                    registers.set((opcode & 0x0F00)>>8, delayTimer);
+                    registers.set((opcode & 0x0f00)>>8, delayTimer);
                     break;
                 
-                case 0x0A: // LD Vx, K
+                case 0x0a: // LD Vx, K
                 {
                     std::cout << "LD Vx, K" << std::endl;
                     
@@ -765,7 +765,7 @@ void Chip8::emulateCycle()
                     }
                     while (!hasValidKeyPressed); // Loop until a valid keypress
                     
-                    registers.set((opcode & 0x0F00)>>8, pressedKey);
+                    registers.set((opcode & 0x0f00)>>8, pressedKey);
                     
                     std::cout << "Loaded key: " << static_cast<int>(pressedKey) << std::endl;
                     
@@ -774,29 +774,29 @@ void Chip8::emulateCycle()
                 
                 case 0x15: // LD DT, Vx
                     std::cout << "LD DT, Vx" << std::endl;
-                    delayTimer = registers.get((opcode & 0x0F00)>>8);
+                    delayTimer = registers.get((opcode & 0x0f00)>>8);
                     break;
                 
                 case 0x18: // LD ST, Vx
                     std::cout << "LD ST, Vx" << std::endl;
-                    soundTimer = registers.get((opcode & 0x0F00)>>8);
+                    soundTimer = registers.get((opcode & 0x0f00)>>8);
                     break;
                 
-                case 0x1E: // ADD I, Vx
+                case 0x1e: // ADD I, Vx
                     std::cout << "ADD I, Vx" << std::endl;
-                    I += registers.get((opcode & 0x0F00)>>8);
+                    I += registers.get((opcode & 0x0f00)>>8);
                     break;
                 
                 case 0x29: // LD F, Vx
                     std::cout << "FD, F, Vx" << std::endl;
-                    I = registers.get((opcode & 0x0F00)>>8)*5;
-                    std::cout << "FONT LOADED: " << registers.get((opcode & 0x0F00)>>8) << std::endl;
+                    I = registers.get((opcode & 0x0f00)>>8)*5;
+                    std::cout << "FONT LOADED: " << registers.get((opcode & 0x0f00)>>8) << std::endl;
                     break;
                 
                 case 0x33: // LD B, Vx
                 {
                     std::cout << "LD B, Vx" << std::endl;
-                    uint8_t number{registers.get((opcode & 0x0F00)>>8)};
+                    uint8_t number{registers.get((opcode & 0x0f00)>>8)};
                     memory[I] = (number / 100);
                     memory[I+1] = ((number / 10) % 10);
                     memory[I+2] = (number % 10);
@@ -806,7 +806,7 @@ void Chip8::emulateCycle()
                 case 0x55: // LD [I], Vx
                 {
                     std::cout << "LD [I], Vx" << std::endl;
-                    uint8_t x{static_cast<uint8_t>((opcode & 0x0F00)>>8)};
+                    uint8_t x{static_cast<uint8_t>((opcode & 0x0f00)>>8)};
                         
                     for (uint8_t i{}; i <= x; ++i)
                         memory[I + i] = registers.get(i);
@@ -819,7 +819,7 @@ void Chip8::emulateCycle()
                 case 0x65: // LD Vx, [I]
                 {
                     std::cout << "LD Vx, [I]" << std::endl;
-                    uint8_t x{static_cast<uint8_t>((opcode & 0x0F00)>>8)};
+                    uint8_t x{static_cast<uint8_t>((opcode & 0x0f00)>>8)};
                     
                     for (uint8_t i{}; i <= x; ++i)
                         registers.set(i, memory[I + i]);

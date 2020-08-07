@@ -63,7 +63,7 @@ The content can flicker, this is due to how the CHIP-8 interpreter is designed.
 ### Keys
 
 #### Keypad
-The CHIP-8 can accept 16 (0xF) keys by design.
+The CHIP-8 can accept 16 (0xf) keys by design.
 
 The original keypad:
 

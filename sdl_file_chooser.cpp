@@ -20,9 +20,6 @@ void FileChooser::getFileList(const std::string &directory, const std::string &e
             fileExtension = std::string(file.path()).substr(dotPos == std::string::npos ? std::string::npos : dotPos+1);
         }
 
-        std::cout << fileExtension << '\n';
-        std::cout.flush();
-
         if (std::filesystem::is_regular_file(file) && (fileExtension.compare(extension) == 0))
             fileList.push_back(file.path().c_str());
     }
