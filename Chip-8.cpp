@@ -90,21 +90,8 @@ void Chip8::loadFile(std::string romFilename)
     fseek(romFile, 0, SEEK_SET);
     
     std::cout << "File size: " << std::dec << romSize << " / 0x" << std::hex << romSize << " bytes" << '\n';
-    
-    std::cout << "End of program segment: " << std::dec <<  511+romSize << std::hex << '\n';
-    
-    uint8_t *buffer = static_cast<uint8_t *>(calloc(romSize, 8));
-    
-    if (buffer == nullptr)
-    {
-        std::cout << "Unable to allocate memory" << '\n';
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to allocate memory for the file content", window);
 
-        std::exit(2);
-    }
-    
-    // Read from the file to the buffer
-    fread(buffer, 8, romSize, romFile);
+    fread(memory+512, 8, romSize, romFile);
 
     auto copied = ftell(romFile);
     
@@ -113,20 +100,9 @@ void Chip8::loadFile(std::string romFilename)
     if (copied != romSize)
     {
         std::cout << "Unable to copy to buffer" << '\n';
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to copy file content to buffer", window);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to copy file content to memory", window);
 
         std::exit(2);
-    }
-
-    std::cout << '\n' << "--- FILE BUFFER --- " << '\n';
-    for (int i{}; i < romSize; ++i)
-        std::cout << static_cast<int>(buffer[i]) << ' ';
-    std::cout << '\n' << "--- END OF BUFFER ---" << '\n';
-    
-    // Copy the data from the file buffer to the virtual memory
-    for (int i{}; i < romSize; ++i)
-    {
-        memory[512+i] = buffer[i];
     }
 
     std::cout << '\n' << "--- START OF MEMORY ---" << '\n';
@@ -144,7 +120,6 @@ void Chip8::loadFile(std::string romFilename)
     std::cout << '\n';
     
     fclose(romFile);
-    free(buffer);
 }
 
 void Chip8::loadFontSet()
