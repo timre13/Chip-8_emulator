@@ -270,6 +270,13 @@ void Chip8::fetchOpcode()
         hasEnded = true;
         return;
     }
+
+    if (pc & 1)
+    {
+        std::cerr << "Tried to fetch opcode from odd address" << std::endl;
+        hasEnded = true;
+        return;
+    }
     
     // We swap the upper and lower bits.
     // The opcode is 16 bits long, so we have to
