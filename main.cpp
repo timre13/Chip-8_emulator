@@ -78,7 +78,7 @@ int main()
     bool isSteppingMode{false};
     bool shouldStep{false}; // no effect when not in stepping mode
     double renderUpdateCountdown{0}; // Decremented and when 0, the renderer is updated
-    while (isRunning && !chip8.hasEnded)
+    while (isRunning && !chip8.m_hasEnded)
     {
         SDL_Event event;
 
@@ -187,7 +187,7 @@ int main()
         // Mark that we executed an instruction since the last step
         shouldStep = false;
 
-        if (chip8.renderFlag)
+        if (chip8.m_renderFlag)
         {
             chip8.renderFrameBuffer();
             renderUpdateCountdown = 16.67;
