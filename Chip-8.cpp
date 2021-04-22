@@ -9,6 +9,7 @@
 #include "Chip-8.h"
 #include "fontset.h"
 #include "sound.h"
+#include "gfx.h"
 
 extern double frameDelay;
 
@@ -209,6 +210,7 @@ void Chip8::deinit()
 
     std::cout << '\n' << "----- deinit -----" << std::endl;
 
+    SDL_DestroyTexture(m_contentTexture);
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);
 
@@ -235,19 +237,20 @@ void Chip8::renderFrameBuffer()
         return;
     }
 
-    for (int y{}; y < 32; ++y)
+    for (int x{}; x < 64; ++x)
     {
-        for (int x{}; x < 64; ++x)
+        for (int y{}; y < 32; ++y)
         {
-            int currentPixelI{y*64+x};
+            const int currentPixelI{y*64+x};
+            SDL_Rect rect{static_cast<int>(std::ceil(x*20*m_scale)),
+                          static_cast<int>(std::ceil(y*20*m_scale)),
+                          static_cast<int>(std::ceil(20*m_scale)),
+                          static_cast<int>(std::ceil(20*m_scale))};
+
             if (m_frameBuffer[currentPixelI])
-            {
-                SDL_Rect rect{static_cast<int>(std::ceil(x*20*m_scale)),
-                              static_cast<int>(std::ceil(y*20*m_scale)),
-                              static_cast<int>(std::ceil(20*m_scale)),
-                              static_cast<int>(std::ceil(20*m_scale))};
                 Gfx::drawFilledRect(pixelData, pitch, rect, SDL_Color{fgColorR, fgColorG, fgColorb});
-            }
+            else
+                Gfx::drawFilledRect(pixelData, pitch, rect, SDL_Color{bgColorR, bgColorG, bgColorB});
         }
     }
     SDL_UnlockTexture(m_contentTexture);
@@ -263,7 +266,6 @@ void Chip8::clearContentTexture()
         std::cerr << "Error: Failed to lock content texture for filling: " << SDL_GetError() << std::endl;
         return;
     }
-
     Gfx::fillTexture(pixelData, pitch, m_contentTextureHeight, SDL_Color{bgColorR, bgColorG, bgColorB});
     SDL_UnlockTexture(m_contentTexture);
 }
@@ -348,9 +350,25 @@ void Chip8::whenWindowResized(int width, int height)
 	if (m_isDebugMode)
 	    m_scale *= 0.6; // This way the debug info can fit in the window
 
-	SDL_SetRenderDrawColor(m_renderer, bgColorR, bgColorG, bgColorB, 255);
-	SDL_RenderClear(m_renderer);
+    // Create a new texture with the new size
+    SDL_DestroyTexture(m_contentTexture);
+    m_contentTextureWidth = static_cast<int>(std::ceil(65*20*m_scale));
+    m_contentTextureHeight = static_cast<int>(std::ceil(33*20*m_scale));
+    m_contentTexture = SDL_CreateTexture(
+            m_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING,
+            m_contentTextureWidth, m_contentTextureHeight);
+
 	renderFrameBuffer();
+}
+
+void Chip8::updateRenderer()
+{
+    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(m_renderer);
+
+    SDL_Rect dstRect{0, 0, m_contentTextureWidth, m_contentTextureHeight};
+    SDL_RenderCopy(m_renderer, m_contentTexture, nullptr, &dstRect);
+    SDL_RenderPresent(m_renderer);
 }
 
 uint32_t Chip8::getWindowID()
@@ -746,7 +764,7 @@ void Chip8::emulateCycle()
                     {
                         setDebugTitle();
                         
-                        SDL_SetWindowTitle(m_window, 
+                        SDL_SetWindowTitle(m_window,
                             (std::string(SDL_GetWindowTitle(m_window))+
                             std::string(" - waiting for keypress")).c_str());
                         

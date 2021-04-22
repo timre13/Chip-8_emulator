@@ -177,7 +177,7 @@ private:
     void loadFontSet();
     void initVideo();
     
-    void clearRenderer();
+    void clearContentTexture();
     void clearDebugInfo();
 
     void fetchOpcode();
@@ -199,7 +199,7 @@ public:
     void emulateCycle();
     void renderFrameBuffer();
     
-    inline void updateRenderer() { SDL_RenderPresent(m_renderer); }
+    void updateRenderer();
     
     void setDebugTitle();
     void setPaused();

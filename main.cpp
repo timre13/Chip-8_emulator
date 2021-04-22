@@ -67,6 +67,7 @@ int main()
     std::cout << "Emulation speed: " << emulationSpeed << std::endl;
 
     Chip8 chip8{romFilename};
+	chip8.whenWindowResized(64*20, 32*20);
     
     std::cout << std::hex;
     
@@ -122,7 +123,6 @@ int main()
 				case SDL_WINDOWEVENT:
 					if (event.window.windowID == chip8.getWindowID())
 					{
-					    chip8.renderFrameBuffer();
 					    chip8.displayDebugInfoIfInDebugMode();
 
 						switch (event.window.event)
@@ -183,6 +183,7 @@ int main()
         chip8.clearIsReadingKeyStateFlag();
 
         chip8.emulateCycle();
+		chip8.updateRenderer();
         
         // Mark that we executed an instruction since the last step
         shouldStep = false;
