@@ -282,14 +282,14 @@ void Chip8::fetchOpcode()
     if (m_pc > 0xfff)
     {
         std::cout << "Memory accessed out of range" << std::endl;
-        m_hasEnded = true;
+        m_hasExited = true;
         return;
     }
 
     if (m_pc & 1)
     {
         std::cerr << "Tried to fetch opcode from odd address" << std::endl;
-        m_hasEnded = true;
+        m_hasExited = true;
         return;
     }
     
@@ -775,9 +775,9 @@ void Chip8::emulateCycle()
                             {
                                 if (event.key.keysym.sym == SDLK_F12)
                                 {
-                                	m_hasEnded = true;
-                                	hasValidKeyPressed = true;
-                                	break;
+                                    m_hasExited = true;
+                                    hasValidKeyPressed = true;
+                                    break;
                                 }
                                 
                                 auto value{keyMap[i]};

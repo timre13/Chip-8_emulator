@@ -170,6 +170,10 @@ private:
 
     bool m_hasDeinitCalled{false};
 
+    // Whether the program should exit
+    bool m_hasExited{false};
+    // Marks whether we need to redraw the framebuffer
+    bool m_renderFlag = true;
     
     void loadFile(std::string romFilename);
     void loadFontSet();
@@ -211,13 +215,11 @@ public:
     void displayDebugInfoIfInDebugMode();
 
     uint32_t getWindowID();
+    inline bool hasExited() const { return m_hasExited; }
+    inline bool getRenderFlag() const { return m_renderer; }
 
     void clearLastRegisterOperationFlags();
     void clearIsReadingKeyStateFlag();
-
-    bool m_hasEnded{false}; // marks whether the program ended
-    // Marks whether we need to redraw the framebuffer
-    bool m_renderFlag = true;
 };
 
 #endif // CHIP8_H
