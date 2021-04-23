@@ -178,6 +178,15 @@ void Chip8::initVideo()
         std::cerr << "Unable to create renderer. " << SDL_GetError() << '\n';
         std::exit(2);
     }
+
+    m_contentTexture = SDL_CreateTexture(
+            m_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING,
+            64, 32);
+    if (!m_contentTexture)
+    {
+        std::cerr << "Unable to create content texture. " << SDL_GetError() << '\n';
+        std::exit(2);
+    }
     
     std::cout << "Loading font" << std::endl;
 
@@ -197,7 +206,7 @@ void Chip8::initVideo()
 
     SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 
-    SDL_SetWindowMinimumSize(m_window, 200, 100);
+    SDL_SetWindowMinimumSize(m_window, 64 * 2, 32 * 2);
 }
 
 void Chip8::deinit()
@@ -242,15 +251,10 @@ void Chip8::renderFrameBuffer()
         for (int y{}; y < 32; ++y)
         {
             const int currentPixelI{y*64+x};
-            SDL_Rect rect{static_cast<int>(std::ceil(x*20*m_scale)),
-                          static_cast<int>(std::ceil(y*20*m_scale)),
-                          static_cast<int>(std::ceil(20*m_scale)),
-                          static_cast<int>(std::ceil(20*m_scale))};
-
             if (m_frameBuffer[currentPixelI])
-                Gfx::drawFilledRect(pixelData, pitch, rect, SDL_Color{fgColorR, fgColorG, fgColorb});
+                Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{fgColorR, fgColorG, fgColorb});
             else
-                Gfx::drawFilledRect(pixelData, pitch, rect, SDL_Color{bgColorR, bgColorG, bgColorB});
+                Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{bgColorR, bgColorG, bgColorB});
         }
     }
     SDL_UnlockTexture(m_contentTexture);
@@ -266,7 +270,7 @@ void Chip8::clearContentTexture()
         std::cerr << "Error: Failed to lock content texture for filling: " << SDL_GetError() << std::endl;
         return;
     }
-    Gfx::fillTexture(pixelData, pitch, m_contentTextureHeight, SDL_Color{bgColorR, bgColorG, bgColorB});
+    Gfx::fillTexture(pixelData, pitch, 32, SDL_Color{bgColorR, bgColorG, bgColorB});
     SDL_UnlockTexture(m_contentTexture);
 }
 
@@ -342,21 +346,13 @@ void Chip8::whenWindowResized(int width, int height)
 {
 	std::cout << "Window resized" << '\n';
 
-	double horizontalScale{width  / (64*20.0)};
-	double   verticalScale{height / (32*20.0)};
+    int horizontalScale{width  / 64};
+	int verticalScale{height / 32};
 
 	m_scale = std::min(horizontalScale, verticalScale);
 
 	if (m_isDebugMode)
 	    m_scale *= 0.6; // This way the debug info can fit in the window
-
-    // Create a new texture with the new size
-    SDL_DestroyTexture(m_contentTexture);
-    m_contentTextureWidth = static_cast<int>(std::ceil(65*20*m_scale));
-    m_contentTextureHeight = static_cast<int>(std::ceil(33*20*m_scale));
-    m_contentTexture = SDL_CreateTexture(
-            m_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING,
-            m_contentTextureWidth, m_contentTextureHeight);
 
 	renderFrameBuffer();
 }
@@ -366,7 +362,7 @@ void Chip8::updateRenderer()
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
     SDL_RenderClear(m_renderer);
 
-    SDL_Rect dstRect{0, 0, m_contentTextureWidth, m_contentTextureHeight};
+    SDL_Rect dstRect{0, 0, 64 * m_scale, 32 * m_scale};
     SDL_RenderCopy(m_renderer, m_contentTexture, nullptr, &dstRect);
     SDL_RenderPresent(m_renderer);
 }

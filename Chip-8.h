@@ -155,12 +155,10 @@ private:
 
     // A texture where we render the game
     SDL_Texture* m_contentTexture{};
-    int m_contentTextureWidth{};
-    int m_contentTextureHeight{};
 
     TTF_Font *m_font;
 
-    double m_scale{1.0};
+    int m_scale{1};
     bool m_isFullscreen{false};
     bool m_isDebugMode{false};
     bool m_isReadingKey{false};
