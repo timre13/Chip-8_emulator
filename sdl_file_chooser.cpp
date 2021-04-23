@@ -113,10 +113,10 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
     {
         SDL_Event event;
         
-        SDL_PollEvent(&event);
-
-        switch (event.type)
+        while (SDL_PollEvent(&event))
         {
+            switch (event.type)
+            {
             case SDL_QUIT:
                 chosenFileI = -1;
                 isRunning = false;
@@ -149,7 +149,25 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
                         deinit();
                         return;
                 }
-            break;
+                break;
+
+            case SDL_MOUSEWHEEL:
+                if (event.wheel.y < 0)
+                {
+                    chosenFileI += 1;
+
+                    if (chosenFileI > static_cast<int>(fileList.size())-1)
+                        chosenFileI = fileList.size()-1;
+                }
+                else if (event.wheel.y > 0)
+                {
+                    chosenFileI -= 1;
+
+                    if (chosenFileI < 0)
+                        chosenFileI = 0;
+                }
+                break;
+            }
         }
         
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
