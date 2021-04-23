@@ -11,6 +11,16 @@ include_directories(/usr/include/SDL2)
 link_libraries(SDL2 SDL2_ttf ncurses)
 
 add_executable(chip8emu
-    Chip-8.cpp  DoubleAsker.cpp  main.cpp  sdl_file_chooser.cpp  sound.cpp
-    Chip-8.h  DoubleAsker.h  fontset.h  sdl_file_chooser.h  sound.h  to_hex.h
+    main.cpp
+    Chip-8.h
+    Chip-8.cpp
+    DoubleAsker.h
+    DoubleAsker.cpp
+    sdl_file_chooser.h
+    sdl_file_chooser.cpp
+    sound.h
+    sound.cpp
+    fontset.h
+    to_hex.h
+    gfx.h
 )
