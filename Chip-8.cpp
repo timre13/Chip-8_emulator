@@ -146,8 +146,8 @@ void Chip8::initVideo()
     
     if (SDL_Init(SDL_INIT_VIDEO))
     {
-    	std::cerr << "Unable to initialize SDL. " << SDL_GetError() << '\n';
-    	std::exit(2);
+        std::cerr << "Unable to initialize SDL. " << SDL_GetError() << '\n';
+        std::exit(2);
     }
 
     std::cout << "Creating window" << std::endl;
@@ -355,24 +355,24 @@ void Chip8::setDebugTitle()
 
 void Chip8::setPaused()
 {
-	SDL_SetWindowTitle(m_window, (std::string(TITLE)+" - [PAUSED]").c_str());
+    SDL_SetWindowTitle(m_window, (std::string(TITLE)+" - [PAUSED]").c_str());
 
-	SDL_Rect rect{0,
-				  0,
-				  static_cast<int>(std::ceil(64*20*m_scale)),
-				  static_cast<int>(std::ceil(32*20*m_scale))
-	};
+    SDL_Rect rect{0,
+                  0,
+                  static_cast<int>(std::ceil(64*20*m_scale)),
+                  static_cast<int>(std::ceil(32*20*m_scale))
+    };
 
-	// Make the window darker
-	SDL_SetRenderDrawColor(m_renderer, bgColorR, bgColorG, bgColorB, 150);
-	SDL_RenderFillRect(m_renderer, &rect);
+    // Make the window darker
+    SDL_SetRenderDrawColor(m_renderer, bgColorR, bgColorG, bgColorB, 150);
+    SDL_RenderFillRect(m_renderer, &rect);
 
-	updateRenderer();
+    updateRenderer();
 }
 
 void Chip8::whenWindowResized(int width, int height)
 {
-	std::cout << "Window resized" << '\n';
+    std::cout << "Window resized" << '\n';
 
     m_windowWidth = width;
     m_windowHeight = height;
@@ -382,11 +382,11 @@ void Chip8::whenWindowResized(int width, int height)
         width -= DEBUGGER_TEXTURE_W;
 
     int horizontalScale{width  / 64};
-	int verticalScale{height / 32};
+    int verticalScale{height / 32};
 
-	m_scale = std::min(horizontalScale, verticalScale);
+    m_scale = std::min(horizontalScale, verticalScale);
 
-	renderFrameBuffer();
+    renderFrameBuffer();
 }
 
 void Chip8::updateRenderer()
@@ -409,7 +409,7 @@ void Chip8::updateRenderer()
 
 uint32_t Chip8::getWindowID()
 {
-	return SDL_GetWindowID(m_window);
+    return SDL_GetWindowID(m_window);
 }
 
 void Chip8::clearLastRegisterOperationFlags()
