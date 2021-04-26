@@ -696,7 +696,7 @@ void Chip8::emulateCycle()
                     std::cout << "ADD Vx, Vy" << std::endl;
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) + m_registers.get((m_opcode & 0x00f0)>>4));
 
-                    if (m_registers.get((m_opcode & 0x00f0)>>4) > (0xff - m_registers.get((m_opcode && 0x0f00)>>8)))
+                    if (m_registers.get((m_opcode & 0x00f0)>>4) > (0xff - m_registers.get((m_opcode & 0x0f00)>>8)))
                         m_registers.set(0xf, 1);
                     else
                         m_registers.set(0xf, 0);
