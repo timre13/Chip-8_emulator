@@ -23,14 +23,14 @@ bool storeBitShiftResultOfY{true};
 bool incrementIAfterMemoryOperation{true};
 
 // Color of background
-uint8_t bgColorR{155};
-uint8_t bgColorG{250};
-uint8_t bgColorB{220};
+uint8_t bgColorR{25};
+uint8_t bgColorG{60};
+uint8_t bgColorB{15};
 
 // Color of active pixels
-uint8_t fgColorR{65 };
-uint8_t fgColorG{150};
-uint8_t fgColorb{150};
+uint8_t fgColorR{86};
+uint8_t fgColorG{185};
+uint8_t fgColorb{34};
 
 //------------------------------------------------------------------------------
 
