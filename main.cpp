@@ -123,8 +123,6 @@ int main()
 				case SDL_WINDOWEVENT:
 					if (event.window.windowID == chip8.getWindowID())
 					{
-					    chip8.displayDebugInfoIfInDebugMode();
-
 						switch (event.window.event)
 						{
 						case SDL_WINDOWEVENT_RESIZED:
@@ -146,9 +144,8 @@ int main()
         {
         	wasPaused = true;
 
-        	//chip8.renderFrameBuffer();
-
-        	chip8.displayDebugInfoIfInDebugMode();
+            chip8.renderFrameBuffer();
+            chip8.renderDebugInfoIfInDebugMode();
 
         	if (isPaused)
         	    chip8.setPaused();
@@ -183,23 +180,18 @@ int main()
         chip8.clearIsReadingKeyStateFlag();
 
         chip8.emulateCycle();
-		chip8.updateRenderer();
         
         // Mark that we executed an instruction since the last step
         shouldStep = false;
 
-        if (chip8.getRenderFlag())
+        if (chip8.getRenderFlag() || renderUpdateCountdown <= 0)
         {
             chip8.renderFrameBuffer();
             renderUpdateCountdown = 16.67;
         }
-        else if (renderUpdateCountdown <= 0)
-        {
-            chip8.updateRenderer();
-            renderUpdateCountdown = 16.67;
-        }
         
-        chip8.displayDebugInfoIfInDebugMode();
+    	chip8.renderDebugInfoIfInDebugMode();
+		chip8.updateRenderer();
 
         SDL_Delay(frameDelay);
 

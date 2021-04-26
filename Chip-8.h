@@ -151,12 +151,17 @@ private:
     int m_romSize;
 
     SDL_Window *m_window{nullptr};
+    int m_windowWidth{};
+    int m_windowHeight{};
     SDL_Renderer *m_renderer{nullptr};
 
     // A texture where we render the game
     SDL_Texture* m_contentTexture{};
+    // The texture of the debugger window
+    SDL_Texture* m_debuggerTexture{};
 
-    TTF_Font *m_font;
+    // Every character from code 21 to code 126 prerendered
+    SDL_Texture* m_fontCache['~' - '!' + 1]{};
 
     int m_scale{1};
     bool m_isFullscreen{false};
@@ -180,14 +185,11 @@ private:
     void initVideo();
     
     void clearContentTexture();
-    void clearDebugInfo();
 
     void fetchOpcode();
     
     void turnOnFullscreen();
     void turnOffFullscreen();
-
-    void renderText(const std::string &text, int line, int row=0, const SDL_Color &bgColor={0, 0, 0, 100});
 
     void reportInvalidOpcode(uint8_t opcode);
 
@@ -212,7 +214,7 @@ public:
     void toggleDebugMode();
     void toggleCursor();
 
-    void displayDebugInfoIfInDebugMode();
+    void renderDebugInfoIfInDebugMode();
 
     uint32_t getWindowID();
     inline bool hasExited() const { return m_hasExited; }

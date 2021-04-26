@@ -15,6 +15,9 @@ extern double frameDelay;
 
 //#define ENABLE_DEBUG_TITLE
 
+#define DEBUGGER_TEXTURE_W 300
+#define DEBUGGER_TEXTURE_H 420
+
 constexpr uint8_t keyMap[16]{
     SDLK_x,
     SDLK_1,
@@ -146,14 +149,6 @@ void Chip8::initVideo()
     	std::cerr << "Unable to initialize SDL. " << SDL_GetError() << '\n';
     	std::exit(2);
     }
-    
-    std::cout << "Initializing SDL2_ttf" << std::endl;
-
-    if (TTF_Init())
-    {
-        std::cerr << "Unable to initialize SDL2_ttf: " << TTF_GetError() << '\n';
-        std::exit(2);
-    }
 
     std::cout << "Creating window" << std::endl;
     
@@ -171,7 +166,7 @@ void Chip8::initVideo()
     
     std::cout << "Creating renderer" << std::endl;
     
-    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
+    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     
     if (!m_renderer)
     {
@@ -187,12 +182,26 @@ void Chip8::initVideo()
         std::cerr << "Unable to create content texture. " << SDL_GetError() << '\n';
         std::exit(2);
     }
+
+    m_debuggerTexture = SDL_CreateTexture(
+            m_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_TARGET, DEBUGGER_TEXTURE_W, DEBUGGER_TEXTURE_H);
+    if (!m_debuggerTexture)
+    {
+        std::cerr << "Unable to create debugger texture. " << SDL_GetError() << '\n';
+        std::exit(2);
+    }
     
+    std::cout << "Initializing SDL2_ttf" << std::endl;
+
+    if (TTF_Init())
+    {
+        std::cerr << "Unable to initialize SDL2_ttf: " << TTF_GetError() << '\n';
+        std::exit(2);
+    }
     std::cout << "Loading font" << std::endl;
 
-    m_font = TTF_OpenFont("Anonymous_Pro.ttf", 16);
-
-    if (!m_font)
+    TTF_Font* font = TTF_OpenFont("Anonymous_Pro.ttf", 16);
+    if (!font)
     {
         std::cerr << "Unable to load font: " << TTF_GetError() << '\n';
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to load font", m_window);
@@ -200,11 +209,32 @@ void Chip8::initVideo()
         std::exit(2);
     }
 
+    std::cout << "Caching font..." << std::endl;
+    for (int i{'!'}; i <= '~'; ++i)
+    {
+        char str[2]{(char)i};
+
+        SDL_Surface* charSurface{TTF_RenderText_Blended(font, (const char*)&str, {255, 255, 255, 255})};
+        if (!charSurface)
+        {
+            std::cerr << "Failed to render font: " << SDL_GetError() << '\n';
+            std::exit(2);
+        }
+        SDL_Texture* charTexture{SDL_CreateTextureFromSurface(m_renderer, charSurface)};
+        if (!charTexture)
+        {
+            std::cerr << "Failed to convert font surface to texture: " << SDL_GetError() << '\n';
+            std::exit(2);
+        }
+        SDL_FreeSurface(charSurface);
+        m_fontCache[i - '!'] = charTexture;
+    }
+    TTF_CloseFont(font);
+    TTF_Quit();
+
     SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
     SDL_RenderClear(m_renderer);
     updateRenderer();
-
-    SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 
     SDL_SetWindowMinimumSize(m_window, 64 * 2, 32 * 2);
 }
@@ -220,12 +250,10 @@ void Chip8::deinit()
     std::cout << '\n' << "----- deinit -----" << std::endl;
 
     SDL_DestroyTexture(m_contentTexture);
+    SDL_DestroyTexture(m_debuggerTexture);
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);
 
-    TTF_CloseFont(m_font);
-
-    TTF_Quit();
     SDL_Quit();
 
     m_hasDeinitCalled = true;
@@ -346,13 +374,17 @@ void Chip8::whenWindowResized(int width, int height)
 {
 	std::cout << "Window resized" << '\n';
 
+    m_windowWidth = width;
+    m_windowHeight = height;
+
+    // If the debugger is active, leave space for it in the window
+    if (m_isDebugMode)
+        width -= DEBUGGER_TEXTURE_W;
+
     int horizontalScale{width  / 64};
 	int verticalScale{height / 32};
 
 	m_scale = std::min(horizontalScale, verticalScale);
-
-	if (m_isDebugMode)
-	    m_scale *= 0.6; // This way the debug info can fit in the window
 
 	renderFrameBuffer();
 }
@@ -362,8 +394,16 @@ void Chip8::updateRenderer()
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
     SDL_RenderClear(m_renderer);
 
-    SDL_Rect dstRect{0, 0, 64 * m_scale, 32 * m_scale};
-    SDL_RenderCopy(m_renderer, m_contentTexture, nullptr, &dstRect);
+    { // Game content texture
+        SDL_Rect dstRect{0, 0, 64 * m_scale, 32 * m_scale};
+        SDL_RenderCopy(m_renderer, m_contentTexture, nullptr, &dstRect);
+    }
+    if (m_isDebugMode)
+    {
+        SDL_Rect dstRect{m_windowWidth - DEBUGGER_TEXTURE_W, 0, DEBUGGER_TEXTURE_W, DEBUGGER_TEXTURE_H};
+        SDL_RenderCopy(m_renderer, m_debuggerTexture, nullptr, &dstRect);
+    }
+
     SDL_RenderPresent(m_renderer);
 }
 
@@ -418,70 +458,129 @@ void Chip8::toggleDebugMode()
     whenWindowResized(w, h);
 }
 
-void Chip8::renderText(const std::string &text, int line, int row, const SDL_Color &bgColor)
-{
-    SDL_Surface *textSurface{TTF_RenderText_Shaded(m_font, text.c_str(), {255, 255, 255, 255}, bgColor)};
-    SDL_Texture *textTexture{SDL_CreateTextureFromSurface(m_renderer, textSurface)};
-
-    SDL_Rect destRect{static_cast<int>(64*20*m_scale+9*row)+5, 25*line, static_cast<int>(text.length())*9, 25};
-
-    SDL_RenderCopy(m_renderer, textTexture, nullptr, &destRect);
-
-    SDL_FreeSurface(textSurface);
-    SDL_DestroyTexture(textTexture);
-}
-
-void Chip8::clearDebugInfo()
-{
-    int w, h;
-    SDL_GetWindowSize(m_window, &w, &h);
-    SDL_Rect rect{64*20*m_scale, 0, w-64*20*m_scale, h};
-    SDL_SetRenderDrawColor(m_renderer, 100, 150, 150, 255);
-    SDL_RenderFillRect(m_renderer, &rect);
-}
-
 void Chip8::clearIsReadingKeyStateFlag()
 {
     m_isReadingKey = false;
 }
 
-void Chip8::displayDebugInfoIfInDebugMode()
+void Chip8::renderDebugInfoIfInDebugMode()
 {
     if (!m_isDebugMode)
         return;
 
-    clearDebugInfo();
+    if (SDL_SetRenderTarget(m_renderer, m_debuggerTexture))
+    {
+        std::cerr << "Failed to set render target: " << SDL_GetError() << std::endl;
+        return;
+    }
+    SDL_SetRenderDrawColor(m_renderer, 50, 50, 50, 255);
+    SDL_RenderClear(m_renderer);
 
-    renderText("Opcode: "   + to_hex(m_opcode),       0);
-    renderText("PC: "       + to_hex(m_pc),           2);
-    renderText("I: "        + to_hex(m_indexReg),            4);
-    renderText("SP: "       + to_hex(m_sp),           6);
-    renderText("Stack: ",                           8);
+    int cursorRow{};
+    int cursorCol{};
 
+    auto renderText{[this, &cursorRow, &cursorCol](std::string text, const SDL_Color &color={255, 255, 255, 255}){
+        static constexpr int charWidthPx{9};
+        static constexpr int charHeightPx{16};
+
+        for (size_t i{}; i < text.length(); ++i)
+        {
+            const int character{text[i]};
+            switch (character)
+            {
+            case '\n':
+                ++cursorRow;
+                cursorCol = 0;
+                break;
+
+            case '\t':
+                cursorCol += 4;
+                break;
+
+            case '\v':
+                cursorRow += 4;
+                cursorCol = 0;
+                break;
+
+            case '\r':
+                cursorCol = 0;
+                break;
+
+            case ' ':
+                ++cursorCol;
+                break;
+
+            default:
+                if (character >= '!' && character <= '~') // If printable character
+                {
+                    SDL_Rect destRect{
+                        cursorCol * charWidthPx + 5, cursorRow * charHeightPx,
+                        charWidthPx, charHeightPx};
+                    const int textureI{character - '!'};
+                    SDL_SetTextureColorMod(m_fontCache[textureI], color.r, color.g, color.b);
+                    if (SDL_RenderCopy(m_renderer, m_fontCache[textureI], nullptr, &destRect))
+                    {
+                        std::cerr << "Failed to copy character texture: " << SDL_GetError() << std::endl;
+                    }
+                    ++cursorCol;
+                }
+                else // If unknown nonprintable character
+                {
+                    ++cursorCol;
+                }
+                break;
+            }
+        }
+    }};
+
+    renderText("Opcode: " + to_hex(m_opcode) + "\n\n");
+    renderText("PC: " + to_hex(m_pc) + "\n\n");
+    renderText("I: " + to_hex(m_indexReg) + "\n\n");
+    renderText("SP: " + to_hex(m_sp) + "\n\n");
+
+    renderText("Stack:\n");
     for (int i{15}; i >= 0; --i)
-        renderText(to_hex(m_stack[i]), 9+i);
+        renderText(to_hex(m_stack[i]) + "\n");
 
-    renderText("Registers: ",                               0, 20);
+    constexpr int indent{17};
 
+    cursorRow = 0;
+    cursorCol = indent;
+    renderText("Registers:\n");
     for (int i{}; i < 16; ++i)
     {
-        if (m_registers.getIsRegisterRead(i))
-            renderText(to_hex(i, 1) + ": " + to_hex(m_registers.get(i, true)), 1+i%8, 20+i/8*12, {255, 0, 0, 255});
-        else if (m_registers.getIsRegisterWritten(i))
-            renderText(to_hex(i, 1) + ": " + to_hex(m_registers.get(i, true)), 1+i%8, 20+i/8*12, {0, 255, 0, 255});
-        else
-            renderText(to_hex(i, 1) + ": " + to_hex(m_registers.get(i, true)), 1+i%8, 20+i/8*12);
-    }
+        cursorCol = indent;
 
-    renderText("DT: "       + to_hex(m_delayTimer),   10, 20);
-    renderText("ST: "       + to_hex(m_soundTimer),   12, 20);
+        const bool isRead{m_registers.getIsRegisterRead(i)};
+        const bool isWritten{m_registers.getIsRegisterWritten(i)};
+
+        SDL_Color textColor{255, 255, 255, 255};
+        if (isRead && isWritten)
+            textColor = {255, 255, 0, 255};
+        else if (isRead)
+            textColor = {0, 255, 0, 255};
+        else if (isWritten)
+            textColor = {255, 0, 0, 255};
+
+        renderText(to_hex(i, 1) + ": " + to_hex(m_registers.get(i, true)) + "\n", textColor);
+    }
+    renderText("\n");
+
+    cursorCol = indent;
+    renderText("DT: " + to_hex(m_delayTimer) + "\n");
+    cursorCol = indent;
+    renderText("ST: " + to_hex(m_soundTimer) + "\n\n");
 
     if (m_isReadingKey)
     {
-        renderText("Reading key state", 14, 20);
+        cursorCol = indent;
+        renderText("Reading keys");
     }
 
-    updateRenderer();
+    if (SDL_SetRenderTarget(m_renderer, nullptr))
+    {
+        std::cerr << "Failed to reset render target: " << SDL_GetError() << std::endl;
+    }
 }
 
 void Chip8::reportInvalidOpcode(uint8_t opcode)
