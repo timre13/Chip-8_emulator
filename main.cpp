@@ -7,33 +7,6 @@
 
 #define NDEBUG
 
-//------------------------------------------------------------------------------
-
-
-// Marks whether the Y register's or the X register's value should
-// be stored when processing the 8xy6 or 8xyE instructions.
-// The old implementations used the Y register, the new ones use the X.
-// The result is always stored in the X register.
-bool storeBitShiftResultOfY{true};
-
-// This variable marks whether the I (index register) should be
-// incremented after reading from or writing
-// to memory (FX55 and FX65 instructions).
-// In the original implementation this does happen.
-bool incrementIAfterMemoryOperation{true};
-
-// Color of background
-uint8_t bgColorR{25};
-uint8_t bgColorG{60};
-uint8_t bgColorB{15};
-
-// Color of active pixels
-uint8_t fgColorR{86};
-uint8_t fgColorG{185};
-uint8_t fgColorb{34};
-
-//------------------------------------------------------------------------------
-
 double frameDelay{};
 
 #include "Chip-8.h"

@@ -15,18 +15,6 @@
 
 #define TITLE "CHIP-8 Emulator"
 
-extern bool storeBitShiftResultOfY;
-extern bool incrementIAfterMemoryOperation;
-
-extern uint8_t bgColorR;
-extern uint8_t bgColorG;
-extern uint8_t bgColorB;
-
-extern uint8_t fgColorR;
-extern uint8_t fgColorG;
-extern uint8_t fgColorb;
-
-
 class Registers
 {
 private:

@@ -10,6 +10,7 @@
 #include "fontset.h"
 #include "sound.h"
 #include "gfx.h"
+#include "config.h"
 
 extern double frameDelay;
 
@@ -280,9 +281,9 @@ void Chip8::renderFrameBuffer()
         {
             const int currentPixelI{y*64+x};
             if (m_frameBuffer[currentPixelI])
-                Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{fgColorR, fgColorG, fgColorb});
+                Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{FG_COLOR_R, FG_COLOR_G, FG_COLOR_B});
             else
-                Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{bgColorR, bgColorG, bgColorB});
+                Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{BG_COLOR_R, BG_COLOR_G, BG_COLOR_B});
         }
     }
     SDL_UnlockTexture(m_contentTexture);
@@ -298,7 +299,7 @@ void Chip8::clearContentTexture()
         std::cerr << "Error: Failed to lock content texture for filling: " << SDL_GetError() << std::endl;
         return;
     }
-    Gfx::fillTexture(pixelData, pitch, 32, SDL_Color{bgColorR, bgColorG, bgColorB});
+    Gfx::fillTextureRgb(pixelData, pitch, 32, SDL_Color{BG_COLOR_R, BG_COLOR_G, BG_COLOR_B});
     SDL_UnlockTexture(m_contentTexture);
 }
 
@@ -364,7 +365,7 @@ void Chip8::setPaused()
     };
 
     // Make the window darker
-    SDL_SetRenderDrawColor(m_renderer, bgColorR, bgColorG, bgColorB, 150);
+    SDL_SetRenderDrawColor(m_renderer, BG_COLOR_R, BG_COLOR_G, BG_COLOR_B, 150);
     SDL_RenderFillRect(m_renderer, &rect);
 
     updateRenderer();
@@ -714,10 +715,11 @@ void Chip8::emulateCycle()
                     // Mark whether overflow occurs.
                     m_registers.set(0xf, m_registers.get((m_opcode & 0x0f00)>>8) & 1);
 
-                    if (storeBitShiftResultOfY)
-                        m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) >> 1);
-                    else
-                        m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) >> 1);
+#if SHIFT_Y_REG_INSTEAD_OF_X
+                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) >> 1);
+#else
+                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) >> 1);
+#endif
                     break;
                 
                 case 7: // SUBN Vx, Vy
@@ -732,10 +734,11 @@ void Chip8::emulateCycle()
                     // Mark whether overflow occurs.
                     m_registers.set(0xf, (m_registers.get((m_opcode & 0x0f00)>>8) >> 7));
 
-                    if (storeBitShiftResultOfY)
-                        m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) << 1);
-                    else
-                        m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) << 1);
+#if SHIFT_Y_REG_INSTEAD_OF_X
+                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) << 1);
+#else
+                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) << 1);
+#endif
                     break;
                 
                 default:
@@ -940,8 +943,9 @@ void Chip8::emulateCycle()
                     for (uint8_t i{}; i <= x; ++i)
                         m_memory[m_indexReg + i] = m_registers.get(i);
                     
-                    if (incrementIAfterMemoryOperation)
-                        m_indexReg += (x + 1);
+#if INC_I_AFTER_MEM_OP
+                    m_indexReg += (x + 1);
+#endif
                     break;
                 }
                 
@@ -953,8 +957,9 @@ void Chip8::emulateCycle()
                     for (uint8_t i{}; i <= x; ++i)
                         m_registers.set(i, m_memory[m_indexReg + i]);
                     
-                    if (incrementIAfterMemoryOperation)
-                        m_indexReg += (x + 1);
+#if INC_I_AFTER_MEM_OP
+                    m_indexReg += (x + 1);
+#endif
                     break;
                 }
                 
