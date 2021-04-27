@@ -290,19 +290,6 @@ void Chip8::renderFrameBuffer()
     m_renderFlag = false;
 }
 
-void Chip8::clearContentTexture()
-{
-    uint8_t* pixelData{};
-    int pitch{};
-    if (SDL_LockTexture(m_contentTexture, nullptr, (void**)&pixelData, &pitch))
-    {
-        std::cerr << "Error: Failed to lock content texture for filling: " << SDL_GetError() << std::endl;
-        return;
-    }
-    Gfx::fillTextureRgb(pixelData, pitch, 32, SDL_Color{BG_COLOR_R, BG_COLOR_G, BG_COLOR_B});
-    SDL_UnlockTexture(m_contentTexture);
-}
-
 void Chip8::fetchOpcode()
 {
     // Catch the access out of the valid memory address range (0x00 - 0xfff)
