@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <fstream>
 #include <cassert>
@@ -62,27 +61,27 @@ Chip8::Chip8(const std::string &romFilename)
     std::srand(std::time(nullptr)); // initialize rand()
     std::rand(); // drop the first result
     
-    std::cout << '\n' << "----- setting up video -----" << std::endl;
+    Logger::log << '\n' << "----- setting up video -----" << Logger::End;
     Chip8::initVideo();
 
     // Load the font set to the memory
     Chip8::loadFontSet();
 
-    std::cout << '\n' << "----- loading file -----" << std::endl;
+    Logger::log << '\n' << "----- loading file -----" << Logger::End;
     Chip8::loadFile(romFilename);
 }
 
 void Chip8::loadFile(std::string romFilename)
 {
-    std::cout << "Emulated memory size: " << sizeof(m_memory) / sizeof(m_memory[0]) << std::endl;
+    Logger::log << "Emulated memory size: " << sizeof(m_memory) / sizeof(m_memory[0]) << Logger::End;
     
-    std::cout << "Opening file: " << romFilename << std::endl;
+    Logger::log << "Opening file: " << romFilename << Logger::End;
     
     FILE *romFile = fopen(romFilename.c_str(), "rb");
     
     if (!romFile)
     {
-        std::cerr << "Unable to open file: " << romFilename << std::endl;
+        Logger::err << "Unable to open file: " << romFilename << Logger::End;
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CHIP-8 Emulator", (std::string("Unable to open ROM: ")+romFilename).c_str(), m_window);
 
         std::exit(2);
@@ -94,45 +93,45 @@ void Chip8::loadFile(std::string romFilename)
     
     fseek(romFile, 0, SEEK_SET);
     
-    std::cout << "File size: " << std::dec << m_romSize << " / 0x" << std::hex << m_romSize << " bytes" << '\n';
+    Logger::log << "File size: " << std::dec << m_romSize << " / 0x" << std::hex << m_romSize << " bytes" << Logger::End;
 
     fread(m_memory+512, 8, m_romSize, romFile);
 
     auto copied = ftell(romFile);
     
-    std::cout << "Copied: " << std::dec << copied << std::hex << " bytes" << std::endl;
+    Logger::log << "Copied: " << std::dec << copied << std::hex << " bytes" << Logger::End;
 
     if (copied != m_romSize)
     {
-        std::cout << "Unable to copy to buffer" << '\n';
+        Logger::err << "Unable to copy to buffer" << Logger::End;
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to copy file content to memory", m_window);
 
         std::exit(2);
     }
 
-    std::cout << '\n' << "--- START OF MEMORY ---" << '\n';
+    Logger::log << '\n' << "--- START OF MEMORY ---" << Logger::End;
 
     for (int i{}; i < 0xfff+1; ++i)
     {
-        std::cout << static_cast<int>(m_memory[i]) << ' ';
+        Logger::log << static_cast<int>(m_memory[i]) << ' ';
         if (i == 0x200-1)
-            std::cout << '\n' << "--- START OF PROGRAM ---" << '\n';
+            Logger::log << '\n' << "--- START OF PROGRAM ---" << '\n';
         if ((i) == (m_romSize+511))
-            std::cout << '\n' << "--- END OF PROGRAM ---" << '\n';
+            Logger::log << '\n' << "--- END OF PROGRAM ---" << '\n';
         if (i == 0xfff)
-            std::cout << '\n' << "--- END OF MEMORY ---" << '\n';
+            Logger::log << '\n' << "--- END OF MEMORY ---" << '\n';
     }
-    std::cout << '\n';
+    Logger::log << Logger::End;
     
     fclose(romFile);
 }
 
 void Chip8::loadFontSet()
 {
-    std::cout << '\n' << "--- FONT SET --- " << '\n';
+    Logger::log << '\n' << "--- FONT SET --- " << '\n';
     for (int i{}; i < 80; ++i)
-        std::cout << static_cast<int>(fontset[i]) << ' ';
-    std::cout << '\n' << "--- END OF FONT SET ---" << '\n';
+        Logger::log << static_cast<int>(fontset[i]) << ' ';
+    Logger::log << '\n' << "--- END OF FONT SET ---" << Logger::End;
     
     // copy the font set to the memory
     for (int i{}; i < 80; ++i)
@@ -143,15 +142,15 @@ void Chip8::loadFontSet()
 
 void Chip8::initVideo()
 {
-    std::cout << "Initializing SDL" << std::endl;
+    Logger::log << "Initializing SDL" << Logger::End;
     
     if (SDL_Init(SDL_INIT_VIDEO))
     {
-        std::cerr << "Unable to initialize SDL. " << SDL_GetError() << '\n';
+        Logger::err << "Unable to initialize SDL. " << SDL_GetError() << Logger::End;
         std::exit(2);
     }
 
-    std::cout << "Creating window" << std::endl;
+    Logger::log << "Creating window" << Logger::End;
     
     m_window = SDL_CreateWindow(
             (std::string(TITLE)+" - Loading...").c_str(),
@@ -161,17 +160,17 @@ void Chip8::initVideo()
     
     if (!m_window)
     {
-        std::cerr << "Unable to create window. " << SDL_GetError() << '\n';
+        Logger::err << "Unable to create window. " << SDL_GetError() << Logger::End;
         std::exit(2);
     }
     
-    std::cout << "Creating renderer" << std::endl;
+    Logger::log << "Creating renderer" << Logger::End;
     
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     
     if (!m_renderer)
     {
-        std::cerr << "Unable to create renderer. " << SDL_GetError() << '\n';
+        Logger::err << "Unable to create renderer. " << SDL_GetError() << Logger::End;
         std::exit(2);
     }
 
@@ -180,7 +179,7 @@ void Chip8::initVideo()
             64, 32);
     if (!m_contentTexture)
     {
-        std::cerr << "Unable to create content texture. " << SDL_GetError() << '\n';
+        Logger::err << "Unable to create content texture. " << SDL_GetError() << Logger::End;
         std::exit(2);
     }
 
@@ -188,29 +187,29 @@ void Chip8::initVideo()
             m_renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_TARGET, DEBUGGER_TEXTURE_W, DEBUGGER_TEXTURE_H);
     if (!m_debuggerTexture)
     {
-        std::cerr << "Unable to create debugger texture. " << SDL_GetError() << '\n';
+        Logger::err << "Unable to create debugger texture. " << SDL_GetError() << Logger::End;
         std::exit(2);
     }
     
-    std::cout << "Initializing SDL2_ttf" << std::endl;
+    Logger::log << "Initializing SDL2_ttf" << Logger::End;
 
     if (TTF_Init())
     {
-        std::cerr << "Unable to initialize SDL2_ttf: " << TTF_GetError() << '\n';
+        Logger::err << "Unable to initialize SDL2_ttf: " << TTF_GetError() << Logger::End;
         std::exit(2);
     }
-    std::cout << "Loading font" << std::endl;
+    Logger::log << "Loading font" << Logger::End;
 
     TTF_Font* font = TTF_OpenFont("Anonymous_Pro.ttf", 16);
     if (!font)
     {
-        std::cerr << "Unable to load font: " << TTF_GetError() << '\n';
+        Logger::err << "Unable to load font: " << TTF_GetError() << Logger::End;
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to load font", m_window);
 
         std::exit(2);
     }
 
-    std::cout << "Caching font..." << std::endl;
+    Logger::log << "Caching font..." << Logger::End;
     for (int i{'!'}; i <= '~'; ++i)
     {
         char str[2]{(char)i};
@@ -218,13 +217,13 @@ void Chip8::initVideo()
         SDL_Surface* charSurface{TTF_RenderText_Blended(font, (const char*)&str, {255, 255, 255, 255})};
         if (!charSurface)
         {
-            std::cerr << "Failed to render font: " << SDL_GetError() << '\n';
+            Logger::err << "Failed to render font: " << SDL_GetError() << Logger::End;
             std::exit(2);
         }
         SDL_Texture* charTexture{SDL_CreateTextureFromSurface(m_renderer, charSurface)};
         if (!charTexture)
         {
-            std::cerr << "Failed to convert font surface to texture: " << SDL_GetError() << '\n';
+            Logger::err << "Failed to convert font surface to texture: " << SDL_GetError() << Logger::End;
             std::exit(2);
         }
         SDL_FreeSurface(charSurface);
@@ -248,7 +247,7 @@ void Chip8::deinit()
     SDL_SetWindowTitle(m_window, (std::string(TITLE)+" - Exiting...").c_str());
     updateRenderer();
 
-    std::cout << '\n' << "----- deinit -----" << std::endl;
+    Logger::log << '\n' << "----- deinit -----" << Logger::End;
 
     SDL_DestroyTexture(m_contentTexture);
     SDL_DestroyTexture(m_debuggerTexture);
@@ -271,7 +270,7 @@ void Chip8::renderFrameBuffer()
     int pitch{};
     if (SDL_LockTexture(m_contentTexture, nullptr, (void**)&pixelData, &pitch))
     {
-        std::cerr << "Error: Failed to lock content texture: " << SDL_GetError() << std::endl;
+        Logger::err << "Error: Failed to lock content texture: " << SDL_GetError() << Logger::End;
         return;
     }
 
@@ -297,14 +296,14 @@ void Chip8::fetchOpcode()
     
     if (m_pc > 0xfff)
     {
-        std::cout << "Memory accessed out of range" << std::endl;
+        Logger::err << "Memory accessed out of range" << Logger::End;
         m_hasExited = true;
         return;
     }
 
     if (m_pc & 1)
     {
-        std::cerr << "Tried to fetch opcode from odd address" << std::endl;
+        Logger::err << "Tried to fetch opcode from odd address" << Logger::End;
         m_hasExited = true;
         return;
     }
@@ -314,9 +313,11 @@ void Chip8::fetchOpcode()
     // shift the left part of the opcode and add the right part.
     m_opcode = ((m_memory[m_pc]<<8) | m_memory[m_pc+1]);
     
-    std::cout << std::hex;
-    std::cout << "PC: 0x" << m_pc << std::endl;
-    std::cout << "Current opcode: 0x" << m_opcode << std::endl;
+#if VERBOSE_LOG
+    Logger::log << std::hex;
+    Logger::log << "PC: 0x" << m_pc << Logger::End;
+    Logger::log << "Current opcode: 0x" << m_opcode << Logger::End;
+#endif
     
     m_pc += 2;
 }
@@ -360,7 +361,7 @@ void Chip8::setPaused()
 
 void Chip8::whenWindowResized(int width, int height)
 {
-    std::cout << "Window resized" << '\n';
+    Logger::log << "Window resized" << Logger::End;
 
     m_windowWidth = width;
     m_windowHeight = height;
@@ -458,7 +459,7 @@ void Chip8::renderDebugInfoIfInDebugMode()
 
     if (SDL_SetRenderTarget(m_renderer, m_debuggerTexture))
     {
-        std::cerr << "Failed to set render target: " << SDL_GetError() << std::endl;
+        Logger::err << "Failed to set render target: " << SDL_GetError() << Logger::End;
         return;
     }
     SDL_SetRenderDrawColor(m_renderer, 50, 50, 50, 255);
@@ -508,7 +509,7 @@ void Chip8::renderDebugInfoIfInDebugMode()
                     SDL_SetTextureColorMod(m_fontCache[textureI], color.r, color.g, color.b);
                     if (SDL_RenderCopy(m_renderer, m_fontCache[textureI], nullptr, &destRect))
                     {
-                        std::cerr << "Failed to copy character texture: " << SDL_GetError() << std::endl;
+                        Logger::err << "Failed to copy character texture: " << SDL_GetError() << Logger::End;
                     }
                     ++cursorCol;
                 }
@@ -567,13 +568,13 @@ void Chip8::renderDebugInfoIfInDebugMode()
 
     if (SDL_SetRenderTarget(m_renderer, nullptr))
     {
-        std::cerr << "Failed to reset render target: " << SDL_GetError() << std::endl;
+        Logger::err << "Failed to reset render target: " << SDL_GetError() << Logger::End;
     }
 }
 
 void Chip8::reportInvalidOpcode(uint8_t opcode)
 {
-    std::cerr << "Invalid opcode: " << to_hex(opcode) << '\n';
+    Logger::err << "Invalid opcode: " << to_hex(opcode) << Logger::End;
 
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, TITLE, ("Invalid opcode: "+to_hex(opcode)).c_str(), m_window);
 }
@@ -586,7 +587,15 @@ void Chip8::emulateCycle()
 
     m_timerDecrementCountdown -= frameDelay;
 
-    std::cout << std::hex;
+    auto logOpcode{[](const std::string &str){
+#if VERBOSE_LOG
+        Logger::log << str << Logger::End;
+#else
+        (void)str;
+#endif
+    }};
+
+    Logger::log << std::hex;
 
     switch (m_opcode & 0xf000)
     {
@@ -594,18 +603,18 @@ void Chip8::emulateCycle()
             switch (m_opcode & 0x0fff)
             {
                 case 0x0000:
-                    std::cout << "NOP" << std::endl;
+                    logOpcode("NOP");
                     break;
                     
                 case 0x00e0: // CLS
-                    std::cout << "CLS" << std::endl;
+                    logOpcode("CLS");
                     for (int i{}; i < 64*32; ++i)
                         m_frameBuffer[i] = 0;
                     m_renderFlag = true;
                     break;
                 
                 case 0x00ee: // RET
-                    std::cout << "RET" << std::endl;
+                    logOpcode("RET");
                     m_pc = m_stack[m_sp-1];
                     m_stack[m_sp-1] = 0;
                     --m_sp;
@@ -618,42 +627,42 @@ void Chip8::emulateCycle()
             break;
             
         case 0x1000: // JMP
-            std::cout << "JMP" << std::endl;
+            logOpcode("JMP");
             m_pc = m_opcode & 0x0fff;
             break;
             
         case 0x2000: // CALL
-            std::cout << "CALL" << std::endl;
+            logOpcode("CALL");
             ++m_sp;
             m_stack[m_sp-1] = m_pc;
             m_pc = (m_opcode & 0x0fff);
             break;
             
         case 0x3000: // SE
-            std::cout << "SE" << std::endl;
+            logOpcode("SE");
             if (m_registers.get((m_opcode & 0x0f00)>>8) == (m_opcode & 0x00ff))
                 m_pc += 2;
             break;
             
         case 0x4000: // SNE
-            std::cout << "SNE" << std::endl;
+            logOpcode("SNE");
             if (m_registers.get((m_opcode & 0x0f00)>>8) != (m_opcode & 0x00ff))
                 m_pc += 2;
             break;
         
         case 0x5000: // SE Vx, Vy
-            std::cout << "SE Vx, Vy" << std::endl;
+            logOpcode("SE Vx, Vy");
             if (m_registers.get((m_opcode & 0x0f00)>>8) == m_registers.get((m_opcode & 0x00f0)>>4))
                 m_pc += 2;
             break;
             
         case 0x6000: // LD Vx, byte
-            std::cout << "LD Vx, byte" << std::endl;
+            logOpcode("LD Vx, byte");
             m_registers.set((m_opcode & 0x0f00)>>8, m_opcode & 0x00ff);
             break;
         
         case 0x7000: // ADD Vx, byte
-            std::cout << "ADD Vx, byte" << std::endl;
+            logOpcode("ADD Vx, byte");
             m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) + (m_opcode & 0x00ff));
             break;
         
@@ -661,27 +670,27 @@ void Chip8::emulateCycle()
             switch (m_opcode & 0x000f)
             {
                 case 0: // LD Vx, Vy
-                    std::cout << "LD Vx, Vy" << std::endl;
+                    logOpcode("LD Vx, Vy");
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4));
                     break;
                 
                 case 1: // OR Vx, Vy
-                    std::cout << "OR Vx, Vy" << std::endl;
+                    logOpcode("OR Vx, Vy");
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) | m_registers.get((m_opcode & 0x00f0)>>4));
                     break;
                 
                 case 2: // AND Vx, Vy
-                    std::cout << "AND Vx, Vy" << std::endl;
+                    logOpcode("AND Vx, Vy");
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) & m_registers.get((m_opcode & 0x00f0)>>4));
                     break;
                 
                 case 3: // XOR Vx, Vy
-                    std::cout << "XOR Vx, Vy" << std::endl;
+                    logOpcode("XOR Vx, Vy");
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) ^ m_registers.get((m_opcode & 0x00f0)>>4));
                     break;
                 
                 case 4: // ADD Vx, Vy
-                    std::cout << "ADD Vx, Vy" << std::endl;
+                    logOpcode("ADD Vx, Vy");
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) + m_registers.get((m_opcode & 0x00f0)>>4));
 
                     if (m_registers.get((m_opcode & 0x00f0)>>4) > (0xff - m_registers.get((m_opcode & 0x0f00)>>8)))
@@ -691,14 +700,14 @@ void Chip8::emulateCycle()
                     break;
                 
                 case 5: // SUB Vx, Vy
-                    std::cout << "SUB Vx, Vy" << std::endl;
+                    logOpcode("SUB Vx, Vy");
                     m_registers.set(0xf, !(m_registers.get((m_opcode & 0x0f00)>>8) < m_registers.get((m_opcode & 0x00f0)>>4)));
 
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) - m_registers.get((m_opcode & 0x00f0)>>4));
                     break;
                 
                 case 6: // SHR Vx {, Vy}
-                    std::cout << "SHR Vx {, Vy}" << std::endl;
+                    logOpcode("SHR Vx {, Vy}");
                     // Mark whether overflow occurs.
                     m_registers.set(0xf, m_registers.get((m_opcode & 0x0f00)>>8) & 1);
 
@@ -710,14 +719,14 @@ void Chip8::emulateCycle()
                     break;
                 
                 case 7: // SUBN Vx, Vy
-                    std::cout << "SUBN Vx, Vy" << std::endl;
+                    logOpcode("SUBN Vx, Vy");
                     m_registers.set(0xf, !(m_registers.get((m_opcode & 0x0f00)>>8) > m_registers.get((m_opcode & 0x00f0)>>4)));
 
                     m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) - m_registers.get((m_opcode & 0x0f00)>>8));
                     break;
                 
                 case 0xe: // SHL Vx {, Vy}
-                    std::cout << "SDL Vx, {, Vy}" << std::endl;
+                    logOpcode("SDL Vx, {, Vy}");
                     // Mark whether overflow occurs.
                     m_registers.set(0xf, (m_registers.get((m_opcode & 0x0f00)>>8) >> 7));
 
@@ -735,30 +744,30 @@ void Chip8::emulateCycle()
             break;
         
         case 0x9000: // SNE Vx, Vy
-            std::cout << "SNE Vx, Vy" << std::endl;
+            logOpcode("SNE Vx, Vy");
             if (m_registers.get((m_opcode & 0x0f00)>>8) !=
                 m_registers.get((m_opcode & 0x00f0)>>4))
                 m_pc += 2;
             break;
         
         case 0xa000: // LD I, addr
-            std::cout << "LD I, addr" << std::endl;
+            logOpcode("LD I, addr");
             m_indexReg  = (m_opcode & 0x0fff);
             break;
         
         case 0xb000: // JP V0, addr
-            std::cout << "JP V0, addr" << std::endl;
+            logOpcode("JP V0, addr");
             m_pc = (m_registers.get(0) + (m_opcode & 0x0fff));
             break;
         
         case 0xc000: // RND Vx, byte
-            std::cout << "RND Vx, byte" << std::endl;
+            logOpcode("RND Vx, byte");
             m_registers.set((m_opcode & 0x0f00)>>8, (m_opcode & 0x00ff) & static_cast<uint8_t>(std::rand()));
             break;
         
         case 0xd000: // DRW Vx, Vy, nibble
         {
-            std::cout << "DRW Vx, Vy, nibble" << std::endl;
+            logOpcode("DRW Vx, Vy, nibble");
             
             int x{m_registers.get((m_opcode & 0x0f00) >> 8)};
             int y{m_registers.get((m_opcode & 0x00f0) >> 4)};
@@ -796,13 +805,15 @@ void Chip8::emulateCycle()
             {
                 case 0x9e: // SKP Vx
                 {
-                    std::cout << "SKP Vx" << std::endl;
+                    logOpcode("SKP Vx");
                     
                     m_isReadingKey = true;
 
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
-                    std::cout << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00)>>8)]] << std::endl;
+#if VERBOSE_LOG
+                    Logger::log << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00)>>8)]] << Logger::End;
+#endif
                
                     if (keyState[keyMapScancode[m_registers.get((m_opcode & 0x0f00)>>8)]])
                         m_pc += 2;
@@ -811,13 +822,15 @@ void Chip8::emulateCycle()
                 
                 case 0xa1: // SKNP Vx
                 {
-                    std::cout << "SKNP Vx" << std::endl;
+                    logOpcode("SKNP Vx");
                     
                     m_isReadingKey = true;
 
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
-                    std::cout << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00)>>8)]] << std::endl;
+#if VERBOSE_LOG
+                    Logger::log << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00)>>8)]] << Logger::End;
+#endif
                
                     if (!(keyState[keyMapScancode[m_registers.get((m_opcode & 0x0f00)>>8)]]))
                         m_pc += 2;
@@ -834,13 +847,13 @@ void Chip8::emulateCycle()
             switch (m_opcode & 0x00ff)
             {
                 case 0x07: // LD Vx, DT
-                    std::cout << "LD Vx, DT" << std::endl;
+                    logOpcode("LD Vx, DT");
                     m_registers.set((m_opcode & 0x0f00)>>8, m_delayTimer);
                     break;
                 
                 case 0x0a: // LD Vx, K
                 {
-                    std::cout << "LD Vx, K" << std::endl;
+                    logOpcode("LD Vx, K");
                     
                     uint16_t pressedKey{};
                     
@@ -886,35 +899,39 @@ void Chip8::emulateCycle()
                     
                     m_registers.set((m_opcode & 0x0f00)>>8, pressedKey);
                     
-                    std::cout << "Loaded key: " << static_cast<int>(pressedKey) << std::endl;
+#if VERBOSE_LOG
+                    Logger::log << "Loaded key: " << static_cast<int>(pressedKey) << Logger::End;
+#endif
                     
                     break;
                 }
                 
                 case 0x15: // LD DT, Vx
-                    std::cout << "LD DT, Vx" << std::endl;
+                    logOpcode("LD DT, Vx");
                     m_delayTimer = m_registers.get((m_opcode & 0x0f00)>>8);
                     break;
                 
                 case 0x18: // LD ST, Vx
-                    std::cout << "LD ST, Vx" << std::endl;
+                    logOpcode("LD ST, Vx");
                     m_soundTimer = m_registers.get((m_opcode & 0x0f00)>>8);
                     break;
                 
                 case 0x1e: // ADD I, Vx
-                    std::cout << "ADD I, Vx" << std::endl;
+                    logOpcode("ADD I, Vx");
                     m_indexReg += m_registers.get((m_opcode & 0x0f00)>>8);
                     break;
                 
                 case 0x29: // LD F, Vx
-                    std::cout << "FD, F, Vx" << std::endl;
+                    logOpcode("FD, F, Vx");
                     m_indexReg = m_registers.get((m_opcode & 0x0f00)>>8)*5;
-                    std::cout << "FONT LOADED: " << m_registers.get((m_opcode & 0x0f00)>>8) << std::endl;
+#if VERBOSE_LOG
+                    Logger::log << "FONT LOADED: " << m_registers.get((m_opcode & 0x0f00)>>8) << Logger::End;
+#endif
                     break;
                 
                 case 0x33: // LD B, Vx
                 {
-                    std::cout << "LD B, Vx" << std::endl;
+                    logOpcode("LD B, Vx");
                     uint8_t number{m_registers.get((m_opcode & 0x0f00)>>8)};
                     m_memory[m_indexReg] = (number / 100);
                     m_memory[m_indexReg+1] = ((number / 10) % 10);
@@ -924,7 +941,7 @@ void Chip8::emulateCycle()
                 
                 case 0x55: // LD [I], Vx
                 {
-                    std::cout << "LD [I], Vx" << std::endl;
+                    logOpcode("LD [I], Vx");
                     uint8_t x{static_cast<uint8_t>((m_opcode & 0x0f00)>>8)};
                         
                     for (uint8_t i{}; i <= x; ++i)
@@ -938,7 +955,7 @@ void Chip8::emulateCycle()
                 
                 case 0x65: // LD Vx, [I]
                 {
-                    std::cout << "LD Vx, [I]" << std::endl;
+                    logOpcode("LD Vx, [I]");
                     uint8_t x{static_cast<uint8_t>((m_opcode & 0x0f00)>>8)};
                     
                     for (uint8_t i{}; i <= x; ++i)

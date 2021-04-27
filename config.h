@@ -21,6 +21,12 @@
  */
 #define INC_I_AFTER_MEM_OP 1
 
+/*
+ * If 1, the currently executed opcode, the current PC value and the pressed
+ * key is logged to the terminal.
+ */
+#define VERBOSE_LOG 0
+
 
 // Background color (inactive pixels)
 #define BG_COLOR_R (uint8_t)25

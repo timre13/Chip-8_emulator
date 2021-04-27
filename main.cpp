@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <vector>
 #include <random>
@@ -10,6 +9,7 @@
 double frameDelay{};
 
 #include "Chip-8.h"
+#include "Logger.h"
 #include "sdl_file_chooser.h"
 #include "DoubleAsker.h"
 #include "sound.h"
@@ -17,11 +17,6 @@ double frameDelay{};
 
 int main()
 {
-    #ifdef NDEBUG
-        // Disconnect the stream buffer from cout.
-        std::cout.rdbuf(nullptr);
-    #endif
-
     FileChooser fileChooser{"./roms", "ch8"};
     std::string romFilename{fileChooser.get()};
     
@@ -36,13 +31,13 @@ int main()
     if (emulationSpeed <= 0)
         return 0;
 
-    std::cout << "Filename: " << romFilename << std::endl;
-    std::cout << "Emulation speed: " << emulationSpeed << std::endl;
+    Logger::log << "Filename: " << romFilename << Logger::End;
+    Logger::log << "Emulation speed: " << emulationSpeed << Logger::End;
 
     Chip8 chip8{romFilename};
     chip8.whenWindowResized(64*20, 32*20);
     
-    std::cout << std::hex;
+    Logger::log << std::hex;
     
     frameDelay = 1000.0/500/emulationSpeed;
     

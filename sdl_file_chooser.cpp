@@ -1,4 +1,5 @@
 #include "sdl_file_chooser.h"
+#include "Logger.h"
 #include <cmath>
 #include <stdint.h>
 #include <string>
@@ -84,7 +85,7 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
     
     if (!window)
     {
-        std::cerr << "Unable to create window" << '\n';
+        Logger::err << "Unable to create window" << Logger::End;
         std::exit(2);
     }
     
@@ -92,7 +93,7 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
     
     if (!renderer)
     {
-        std::cerr << "Unable to create renderer" << '\n';
+        Logger::err << "Unable to create renderer" << Logger::End;
         std::exit(2);
     }
     
@@ -100,7 +101,7 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
     
     if (!font)
     {
-        std::cerr << "Unable to open font file." << '\n';
+        Logger::err << "Unable to open font file." << Logger::End;
         std::exit(2);
     }
 

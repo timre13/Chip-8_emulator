@@ -1,4 +1,5 @@
 #include "DoubleAsker.h"
+#include "Logger.h"
 #include <sstream>
 
 DoubleAsker::DoubleAsker()
@@ -15,7 +16,7 @@ void DoubleAsker::init()
     
     if (!window)
     {
-        std::cerr << "Unable to create window" << '\n';
+        Logger::err << "Unable to create window" << Logger::End;
         std::exit(2);
     }
     
@@ -23,7 +24,7 @@ void DoubleAsker::init()
     
     if (!renderer)
     {
-        std::cerr << "Unable to create renderer" << '\n';
+        Logger::err << "Unable to create renderer" << Logger::End;
         std::exit(2);
     }
     
@@ -31,7 +32,7 @@ void DoubleAsker::init()
     
     if (!font)
     {
-        std::cerr << "Unable to open font file." << '\n';
+        Logger::err << "Unable to open font file." << Logger::End;
         std::exit(2);
     }
     

@@ -11,6 +11,7 @@
 #include <cassert>
 #include <bitset>
 
+#include "Logger.h"
 #include "to_hex.h"
 
 #define TITLE "CHIP-8 Emulator"
@@ -83,12 +84,12 @@ public:
         if (index < 0)
         {
             isOutOfBounds = true;
-            std::cout << "Frame buffer index lower than 0" << std::endl;
+            Logger::warn << "Frame buffer index less than 0" << Logger::End;
         }
         if (index >= 64*32)
         {
             isOutOfBounds = true;
-            std::cout << "Frame buffer index out of bounds" << std::endl;
+            Logger::warn << "Frame buffer index out of bounds" << Logger::End;
         }
         
         if (isOutOfBounds)
@@ -99,14 +100,14 @@ public:
     
     void print()
     {
-        std::cout << "--- frame buffer ---" << std::endl;
+        Logger::log << "--- frame buffer ---\n";
         for (int i{}; i < 64*32; ++i)
         {
-            std::cout << m_frameBuffer[i];
+            Logger::log << m_frameBuffer[i];
             if (!((i+1) % 64))
-                std::cout << std::endl;
+                Logger::log << '\n';
         }
-        std::cout << "--------------------" << std::endl;
+        Logger::log << "--------------------" << Logger::End;
     }
 };
 
