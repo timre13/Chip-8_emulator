@@ -12,8 +12,13 @@ On a Debian-based system they can be installed by running the command:
 sudo apt install libsdl2-dev libsdl2-ttf-dev libncurses-dev
 ~~~
 Compiling:
-~~~
-g++ *.cpp -std=c++17 -lstdc++fs -lSDL2 -lSDL2_ttf -lncurses -O3 -o chip8emu
+~~~sh
+mdir build # Create a directory for the build files
+cd build # Step into the directory
+cmake .. # Generate build files
+make # Build
+cp ../*.ttf . # Copy the font to the build directory
+cp -r ../roms . # Copy the ROMs to the build directory
 ~~~
 
 ## Usage
