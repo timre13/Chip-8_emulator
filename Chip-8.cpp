@@ -613,13 +613,6 @@ void Chip8::renderDebugInfoIfInDebugMode()
     }
 }
 
-void Chip8::reportInvalidOpcode(uint8_t opcode)
-{
-    Logger::err << "Invalid opcode: " << to_hex(opcode) << Logger::End;
-
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, TITLE, ("Invalid opcode: "+to_hex(opcode)).c_str(), m_window);
-}
-
 void Chip8::emulateCycle()
 {
     fetchOpcode();
@@ -634,6 +627,13 @@ void Chip8::emulateCycle()
 #else
         (void)str;
 #endif
+    }};
+
+    auto reportInvalidOpcode{[this](uint8_t opcode){
+        Logger::err << "Invalid opcode: " << to_hex(opcode) << Logger::End;
+        Logger::log << '\n' << dumpStateToStr() << Logger::End;
+
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, TITLE, "Invalid opcode, see the terminal for more information", m_window);
     }};
 
     Logger::log << std::hex;

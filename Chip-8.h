@@ -178,9 +178,6 @@ private:
     void turnOnFullscreen();
     void turnOffFullscreen();
 
-    void reportInvalidOpcode(uint8_t opcode);
-
-
 public:
     Chip8(const std::string &romFilename);
     ~Chip8();
