@@ -209,6 +209,8 @@ public:
 
     void clearLastRegisterOperationFlags();
     void clearIsReadingKeyStateFlag();
+
+    std::string dumpStateToStr();
 };
 
 #endif // CHIP8_H

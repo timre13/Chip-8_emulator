@@ -86,6 +86,9 @@ int main()
                             isSteppingMode = !isSteppingMode;
                             isPaused = false;
                             break;
+                        case SHORTCUT_KEYCODE_DUMP_STATE:
+                            Logger::log << '\n' << chip8.dumpStateToStr() << Logger::End;
+                            break;
                     }
                     break;
 

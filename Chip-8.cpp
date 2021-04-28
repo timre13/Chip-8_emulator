@@ -4,6 +4,7 @@
 #include <random>
 #include <ctime>
 #include <cstring>
+#include <string>
 
 #include "Chip-8.h"
 #include "fontset.h"
@@ -450,6 +451,53 @@ void Chip8::toggleDebugMode()
 void Chip8::clearIsReadingKeyStateFlag()
 {
     m_isReadingKey = false;
+}
+
+std::string Chip8::dumpStateToStr()
+{
+    std::stringstream output;
+
+    output << "Memory:\n";
+    output << std::hex;
+    for (int i{}; i < 0x1000; ++i)
+    {
+        output << std::setw(2) << std::setfill('0') << +m_memory[i] << ' ';
+        if (i % 32 == 31)
+            output << '\n';
+    }
+
+    output << "\nFramebuffer:\n";
+    for (int i{}; i < 64 * 32; ++i)
+    {
+        output << +m_frameBuffer[i] << ' ';
+        if (i % 64 == 63)
+            output << '\n';
+    }
+
+    output << "\nPC=" << std::setw(4) << std::setfill('0') << +m_pc
+           << ", Op=" << std::setw(4) << std::setfill('0') << +m_opcode
+           << ", SP=" << std::setw(1) << std::setfill('0') << +m_sp
+           << ", I="  << std::setw(4) << std::setfill('0') << +m_indexReg
+           << ", DT=" << std::setw(2) << std::setfill('0') << +m_delayTimer
+           << ", ST=" << std::setw(2) << std::setfill('0') << +m_soundTimer
+           << '\n';
+    for (int i{}; i < 16; ++i)
+    {
+        output << i << '=' << std::setw(2) << std::setfill('0') << +m_registers.get(i, true);
+        if (i != 15)
+            output << ", ";
+    }
+
+    output << "\n\nStack:\n";
+    for (int i{15}; i > -1; --i)
+    {
+        output << std::setw(4) << std::setfill('0') << m_stack[i];
+        if (i + 1 == m_sp)
+            output << " <-"; // Mark the stack pointer
+        output << '\n';
+    }
+
+    return output.str();
 }
 
 void Chip8::renderDebugInfoIfInDebugMode()
