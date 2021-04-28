@@ -301,13 +301,6 @@ void Chip8::fetchOpcode()
         m_hasExited = true;
         return;
     }
-
-    if (m_pc & 1)
-    {
-        Logger::err << "Tried to fetch opcode from odd address" << Logger::End;
-        m_hasExited = true;
-        return;
-    }
     
     // We swap the upper and lower bits.
     // The opcode is 16 bits long, so we have to
