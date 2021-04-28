@@ -156,7 +156,6 @@ private:
     bool m_isFullscreen{false};
     bool m_isDebugMode{false};
     bool m_isReadingKey{false};
-    bool m_isCursorShown{true};
 
     // Helps to decrement the sound and delay timers at 60 FPS
     // This is decremented after every frame and if 0, the timers decremented.

@@ -403,11 +403,15 @@ void Chip8::clearLastRegisterOperationFlags()
 void Chip8::turnOnFullscreen()
 {
     SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+    SDL_ShowCursor(false);
 }
 
 void Chip8::turnOffFullscreen()
 {
     SDL_SetWindowFullscreen(m_window, 0);
+
+    SDL_ShowCursor(true);
 }
 
 void Chip8::toggleFullscreen()
@@ -425,9 +429,8 @@ void Chip8::toggleFullscreen()
 
 void Chip8::toggleCursor()
 {
-    m_isCursorShown = !m_isCursorShown;
-
-    SDL_ShowCursor(m_isCursorShown);
+    // SDL_ShowCursor(-1) returns whether the cursor is shown
+    SDL_ShowCursor(!SDL_ShowCursor(-1));
 }
 
 void Chip8::toggleDebugMode()
