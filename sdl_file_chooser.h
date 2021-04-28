@@ -28,7 +28,7 @@ public:
     std::string get();
 
 private:
-    void getFileList(const std::string &directory, const std::string &extension);
+    int getFileList(const std::string &directory, const std::string &extension);
     
     void drawFileList();
     void drawTitle(const std::string &title);

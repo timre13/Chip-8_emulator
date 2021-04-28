@@ -4,11 +4,20 @@
 #include <stdint.h>
 #include <string>
 
-void FileChooser::getFileList(const std::string &directory, const std::string &extension)
+int FileChooser::getFileList(const std::string &directory, const std::string &extension)
 {
-    auto files{std::filesystem::recursive_directory_iterator{
-        directory,
-        std::filesystem::directory_options::skip_permission_denied}};
+    std::filesystem::recursive_directory_iterator files{};
+    try
+    {
+        files = {
+            directory,
+            std::filesystem::directory_options::skip_permission_denied};
+    }
+    catch (const std::exception &e)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "", (std::string("Failed to list directory: ") + e.what()).c_str(), window);
+        return 1;
+    }
     
     bool shouldFilter{extension.compare("*") != 0};
 
@@ -26,11 +35,13 @@ void FileChooser::getFileList(const std::string &directory, const std::string &e
     }
     
     std::sort(fileList.begin(), fileList.end());
+
+    return 0;
 }
 
 void FileChooser::drawTitle(const std::string &title)
 {
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, title.c_str(), {255, 255, 255, 255});
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, (fileList.size() ? title : "Empty directory").c_str(), {255, 255, 255, 255});
     
     SDL_Rect sourceRect{0, 0, textSurface->w,        textSurface->h};
     SDL_Rect targetRect{10, 10, textSurface->w / 3,    textSurface->h / 3};
@@ -107,7 +118,8 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
 
     drawTitle("Loading...");
     SDL_RenderPresent(renderer);
-    getFileList(directory, extension);
+    if (getFileList(directory, extension))
+        return; // If failed to open directory, exit
 
     bool isRunning{true};
     while (isRunning)
@@ -188,6 +200,10 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
 
 std::string FileChooser::get()
 {
+    // Return an empty string if there are no files to choose from
+    if (fileList.size() == 0)
+        return "";
+
     if (chosenFileI != -1)
         return fileList.at(chosenFileI);
     
