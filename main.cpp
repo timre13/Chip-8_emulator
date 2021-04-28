@@ -8,6 +8,7 @@
 
 double frameDelay{};
 
+#include "config.h"
 #include "Chip-8.h"
 #include "Logger.h"
 #include "sdl_file_chooser.h"
@@ -62,26 +63,26 @@ int main()
                 case SDL_KEYDOWN:
                     switch(event.key.keysym.sym)
                     {
-                        case SDLK_ESCAPE:
+                        case SHORTCUT_KEYCODE_PAUSE:
                             isPaused = !isPaused;
                             isSteppingMode = false;
                             break;
-                        case SDLK_F12:
+                        case SHORTCUT_KEYCODE_QUIT:
                             isRunning = false;
                             break;
-                        case SDLK_F11:
+                        case SHORTCUT_KEYCODE_FULLSCREEN:
                             chip8.toggleFullscreen();
                             break;
-                        case SDLK_F10:
+                        case SHORTCUT_KEYCODE_DEBUG_MODE:
                             chip8.toggleDebugMode();
                             break;
-                        case SDLK_F9:
+                        case SHORTCUT_KEYCODE_TOGGLE_CURSOR:
                             chip8.toggleCursor();
                             break;
-                        case SDLK_F6:
+                        case SHORTCUT_KEYCODE_STEP_INST:
                             shouldStep = true;
                             break;
-                        case SDLK_F5:
+                        case SHORTCUT_KEYCODE_STEPPING_MODE:
                             isSteppingMode = !isSteppingMode;
                             isPaused = false;
                             break;

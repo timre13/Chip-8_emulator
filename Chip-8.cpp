@@ -875,7 +875,7 @@ void Chip8::emulateCycle()
                         {
                             for (uint16_t i{}; i < 16; ++i)
                             {
-                                if (event.key.keysym.sym == SDLK_F12)
+                                if (event.key.keysym.sym == SHORTCUT_KEYCODE_QUIT)
                                 {
                                     m_hasExited = true;
                                     hasValidKeyPressed = true;
