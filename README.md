@@ -22,8 +22,6 @@ cp -r ../roms . # Copy the ROMs to the build directory
 ~~~
 
 ## Usage
-Note:
-> I will refer to the ROM files as ROM or program in this documentation.
 
 ### Select a CHIP-8 ROM
 When you start the emulator, the ROM selector opens. It shows the ROMs in the ./roms directory and in its subdirectories. You can copy your own ROMs here.
@@ -51,10 +49,7 @@ After you select the ROM and enter the speed, the emulator window opens. There y
 ![The main emulator window (currently executing Tetris)](./readme/tetris.png)
 
 ### The title
-The debug title is **disabled** by default (because it caused high CPU usage).
-You can enable it by defining the *ENABLE_DEBUG_TITLE* macro in a source file.
-
-In the title bar you can see the text CHIP-8 Emulator and some useful informations. If the program is currently running, you can see the program counter, index register, the stack pointer, the delay timer, sount timer and the currently executed opcode.
+The title contains the string `CHIP-8` and the speed of the emulation.
 
 If the program is waiting for input, it is indicated as *waiting for keypress*
 
@@ -86,16 +81,22 @@ This is how the keys are mapped to the (US) keyboard:
 
 #### Function keys
 
-##### Escape
-Pauses the program. Press again to resume. Disables stepping mode if it is active.
+The function keys can be modified in the `config.h` file before compiling.
 
-When paused, the emulator dims the colors.
+##### P
+Pauses the program. Press again to resume. Disables stepping mode if it is active.
 
 ##### F5
 Enables stepping mode. Disables paused mode if active.
 
 ##### F6
 Executes an instruction in stepping mode. No effect if stepping mode is not active.
+
+##### F7
+Slows down the emulation speed by 5%.
+
+##### F8
+Speeds up the emulation speed by 5%.
 
 ##### F9
 Hides/Shows the mouse cursor.
@@ -106,18 +107,22 @@ Enables debug mode.
 In debug mode you can see the currently executed opcode, the program counter,
 the index register, the stack pointer, the content of the stack, the register values,
 the delay and the sound timers. If the program reads from a register, its background is green
-colored, if the program writes to it, it is red colored. It is also displayed when a program
+colored, if the program writes to it, it is red colored, if both, its yellow.
+It is also displayed when a program
 reads which key is pressed.
 
-![Debug mode](./readme/debug-mode.png)
-
 All the values are displayed as hexadecimal with the 0x prefix.
+
+![Debug mode](./readme/debug-mode.png)
 
 ##### F11
 Toggles the fullscreen mode.
 
-##### F12
-Closes the emulator.
+##### Escape
+Exits the emulator.
+
+##### Backspace
+Dumps the memory, the registers, the framebuffer and the stack to the terminal.
 
 ## License
 Licensed under the MIT license.
