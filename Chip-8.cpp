@@ -864,15 +864,12 @@ void Chip8::emulateCycle()
                 {
                     logOpcode("LD Vx, K");
                     
-                    uint16_t pressedKey{};
+                    SDL_SetWindowTitle(m_window, TITLE " - waiting for keypress");
                     
+                    uint16_t pressedKey{};
                     bool hasValidKeyPressed{false};
                     do
                     {
-                        SDL_SetWindowTitle(m_window,
-                            (std::string(SDL_GetWindowTitle(m_window))+
-                            std::string(" - waiting for keypress")).c_str());
-                        
                         updateRenderer();
                         
                         SDL_Event event;
@@ -903,6 +900,9 @@ void Chip8::emulateCycle()
                         SDL_Delay(10);
                     }
                     while (!hasValidKeyPressed); // Loop until a valid keypress
+
+                    // Reset the title
+                    updateWindowTitle();
                     
                     m_registers.set((m_opcode & 0x0f00)>>8, pressedKey);
                     
