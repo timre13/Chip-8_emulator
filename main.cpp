@@ -13,10 +13,18 @@
 #include "sound.h"
 
 
-int main()
+int main(int argc, char** argv)
 {
-    FileChooser fileChooser{"./roms", "ch8"};
-    std::string romFilename{fileChooser.get()};
+    std::string romFilename{};
+    if (argc > 1)
+    {
+        romFilename = argv[1];
+    }
+    else
+    {
+        FileChooser fileChooser{"./roms", "ch8"};
+        romFilename = fileChooser.get();
+    }
     
     // If the user canceled the file selection, quit.
     if (romFilename.size() == 0)
