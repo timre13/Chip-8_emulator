@@ -12,10 +12,6 @@
 #include "gfx.h"
 #include "config.h"
 
-extern double frameDelay;
-
-//#define ENABLE_DEBUG_TITLE
-
 #define DEBUGGER_TEXTURE_W 300
 #define DEBUGGER_TEXTURE_H 420
 
@@ -316,43 +312,6 @@ void Chip8::fetchOpcode()
     m_pc += 2;
 }
 
-void Chip8::setDebugTitle()
-{
-#ifdef ENABLE_DEBUG_TITLE
-    SDL_SetWindowTitle(m_window,
-        (std::string(TITLE)+" - "+
-            "PC: "      + std::to_string(m_pc)         + " "
-            "I: "       + std::to_string(m_indexReg)          + " "
-            "SP: "      + std::to_string(m_sp)         + " "
-            "DT: "      + std::to_string(m_delayTimer) + " "
-            "ST: "      + std::to_string(m_soundTimer) + " "
-            "Opcode: "  + std::to_string(m_opcode)     + " "
-        ).c_str());
-#else
-    // If the window title is not the default
-    if (std::strcmp(SDL_GetWindowTitle(m_window), TITLE))
-        // Set the default title
-        SDL_SetWindowTitle(m_window, TITLE);
-#endif
-}
-
-void Chip8::setPaused()
-{
-    SDL_SetWindowTitle(m_window, (std::string(TITLE)+" - [PAUSED]").c_str());
-
-    SDL_Rect rect{0,
-                  0,
-                  static_cast<int>(std::ceil(64*20*m_scale)),
-                  static_cast<int>(std::ceil(32*20*m_scale))
-    };
-
-    // Make the window darker
-    SDL_SetRenderDrawColor(m_renderer, BG_COLOR_R, BG_COLOR_G, BG_COLOR_B, 150);
-    SDL_RenderFillRect(m_renderer, &rect);
-
-    updateRenderer();
-}
-
 void Chip8::whenWindowResized(int width, int height)
 {
     Logger::log << "Window resized" << Logger::End;
@@ -616,13 +575,19 @@ void Chip8::renderDebugInfoIfInDebugMode()
     }
 }
 
+void Chip8::updateWindowTitle()
+{
+    if (m_isPaused)
+        SDL_SetWindowTitle(m_window, TITLE " - [PAUSED]");
+    else
+        SDL_SetWindowTitle(m_window, (TITLE " - Speed: " + std::to_string(m_emulSpeedPerc) + "%").c_str());
+}
+
 void Chip8::emulateCycle()
 {
     fetchOpcode();
 
-    setDebugTitle();
-
-    m_timerDecrementCountdown -= frameDelay;
+    m_timerDecrementCountdown -= m_frameDelay;
 
     auto logOpcode{[](const std::string &str){
 #if VERBOSE_LOG
@@ -904,8 +869,6 @@ void Chip8::emulateCycle()
                     bool hasValidKeyPressed{false};
                     do
                     {
-                        setDebugTitle();
-                        
                         SDL_SetWindowTitle(m_window,
                             (std::string(SDL_GetWindowTitle(m_window))+
                             std::string(" - waiting for keypress")).c_str());

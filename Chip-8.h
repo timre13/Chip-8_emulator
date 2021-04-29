@@ -155,6 +155,7 @@ private:
     int m_scale{1};
     bool m_isFullscreen{false};
     bool m_isDebugMode{false};
+    bool m_isPaused{false};
     bool m_isReadingKey{false};
 
     // Helps to decrement the sound and delay timers at 60 FPS
@@ -167,6 +168,9 @@ private:
     bool m_hasExited{false};
     // Marks whether we need to redraw the framebuffer
     bool m_renderFlag = true;
+
+    int m_emulSpeedPerc{};
+    int m_frameDelay{};
     
     void loadFile(std::string romFilename);
     void loadFontSet();
@@ -185,11 +189,22 @@ public:
 
     void emulateCycle();
     void renderFrameBuffer();
+
+    inline void setSpeedPerc(int value)
+    {
+        m_frameDelay = 1000.0 / 500 / (value / 100.0);
+        m_emulSpeedPerc = value;
+        updateWindowTitle();
+    }
     
     void updateRenderer();
     
-    void setDebugTitle();
-    void setPaused();
+    void updateWindowTitle();
+
+    inline void togglePause() { m_isPaused = !m_isPaused; updateWindowTitle(); };
+    inline void pause() { m_isPaused = true; updateWindowTitle(); };
+    inline void unpause() { m_isPaused = false; updateWindowTitle(); };
+    inline bool isPaused() const { return m_isPaused; }
     
     void whenWindowResized(int width, int height);
 

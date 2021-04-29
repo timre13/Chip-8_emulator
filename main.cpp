@@ -6,13 +6,10 @@
 
 #define NDEBUG
 
-double frameDelay{};
-
 #include "config.h"
 #include "Chip-8.h"
 #include "Logger.h"
 #include "sdl_file_chooser.h"
-#include "DoubleAsker.h"
 #include "sound.h"
 
 
@@ -25,25 +22,19 @@ int main()
     if (romFilename.size() == 0)
         return 0;
     
-    DoubleAsker doubleAskerDialog;
-    double emulationSpeed{doubleAskerDialog.get()};
-    
-    // If the user canceled the entering of the emulation speed, quit.
-    if (emulationSpeed <= 0)
-        return 0;
-
     Logger::log << "Filename: " << romFilename << Logger::End;
-    Logger::log << "Emulation speed: " << emulationSpeed << Logger::End;
 
     Chip8 chip8{romFilename};
     chip8.whenWindowResized(64*20, 32*20);
     
     Logger::log << std::hex;
     
+    double emulationSpeed{1.0};
+    int frameDelay{};
     frameDelay = 1000.0/500/emulationSpeed;
+    chip8.setSpeedPerc(100);
     
     bool isRunning{true};
-    bool isPaused{false};
     bool wasPaused{false};
     bool isSteppingMode{false};
     bool shouldStep{false}; // no effect when not in stepping mode
@@ -64,7 +55,7 @@ int main()
                     switch(event.key.keysym.sym)
                     {
                         case SHORTCUT_KEYCODE_PAUSE:
-                            isPaused = !isPaused;
+                            chip8.togglePause();
                             isSteppingMode = false;
                             break;
                         case SHORTCUT_KEYCODE_QUIT:
@@ -84,10 +75,24 @@ int main()
                             break;
                         case SHORTCUT_KEYCODE_STEPPING_MODE:
                             isSteppingMode = !isSteppingMode;
-                            isPaused = false;
+                            chip8.unpause();
                             break;
                         case SHORTCUT_KEYCODE_DUMP_STATE:
                             Logger::log << '\n' << chip8.dumpStateToStr() << Logger::End;
+                            break;
+                        case SHORTCUT_KEYCODE_INC_SPEED:
+                            emulationSpeed += 0.05;
+                            if (emulationSpeed > 10)
+                                emulationSpeed = 10;
+                            frameDelay = 1000.0/500/emulationSpeed;
+                            chip8.setSpeedPerc(emulationSpeed * 100);
+                            break;
+                        case SHORTCUT_KEYCODE_DEC_SPEED:
+                            emulationSpeed -= 0.05;
+                            if (emulationSpeed < 0.05)
+                                emulationSpeed = 0.05;
+                            frameDelay = 1000.0/500/emulationSpeed;
+                            chip8.setSpeedPerc(emulationSpeed * 100);
                             break;
                     }
                     break;
@@ -112,28 +117,19 @@ int main()
             }
         }
 
-        if (isPaused || (isSteppingMode && !shouldStep))
+        if (chip8.isPaused() || (isSteppingMode && !shouldStep))
         {
             wasPaused = true;
 
             chip8.renderFrameBuffer();
             chip8.renderDebugInfoIfInDebugMode();
 
-            if (isPaused)
-                chip8.setPaused();
-            else
-                chip8.setDebugTitle();
-
             chip8.updateRenderer();
 
-            // If paused, slow down the cycle to save processing power
-            if (isPaused)
-                SDL_Delay(frameDelay*500);
-            else
-                SDL_Delay(frameDelay);
+            SDL_Delay(frameDelay);
 
             // If paused or the stepping key was not pressed, don't execute instruction
-            if (isPaused || !shouldStep)
+            if (chip8.isPaused() || !shouldStep)
                 continue;
         }
 

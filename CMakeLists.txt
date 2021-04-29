@@ -14,8 +14,6 @@ add_executable(chip8emu
     main.cpp
     Chip-8.h
     Chip-8.cpp
-    DoubleAsker.h
-    DoubleAsker.cpp
     Logger.h
     Logger.cpp
     sdl_file_chooser.h
