@@ -102,6 +102,9 @@ int main(int argc, char** argv)
                             frameDelay = 1000.0/500/emulationSpeed;
                             chip8.setSpeedPerc(emulationSpeed * 100);
                             break;
+                        case SHORTCUT_KEYCODE_RESET:
+                            chip8.reset();
+                            break;
                     }
                     break;
 

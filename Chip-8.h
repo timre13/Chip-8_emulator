@@ -136,6 +136,7 @@ private:
     // We don't fill it with zeros, because the original implementation doesn't do so
     Framebuffer m_frameBuffer;
 
+    std::string m_romFilename;
     // rom file size in bytes
     int m_romSize;
 
@@ -184,6 +185,8 @@ private:
 public:
     Chip8(const std::string &romFilename);
     ~Chip8();
+
+    void reset();
     
     void deinit();
 

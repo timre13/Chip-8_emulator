@@ -66,6 +66,7 @@ Chip8::Chip8(const std::string &romFilename)
 
     Logger::log << '\n' << "----- loading file -----" << Logger::End;
     Chip8::loadFile(romFilename);
+    m_romFilename = romFilename;
 }
 
 void Chip8::loadFile(std::string romFilename)
@@ -581,6 +582,39 @@ void Chip8::updateWindowTitle()
         SDL_SetWindowTitle(m_window, TITLE " - [PAUSED]");
     else
         SDL_SetWindowTitle(m_window, (TITLE " - Speed: " + std::to_string(m_emulSpeedPerc) + "%").c_str());
+}
+
+void Chip8::reset()
+{
+    Logger::log << "RESET!" << Logger::End;
+
+    m_pc = 0x200;
+    m_sp = 0;
+    m_opcode = 0;
+    m_indexReg = 0;
+    m_delayTimer = 0;
+    m_soundTimer = 0;
+    m_isReadingKey = false;
+    m_timerDecrementCountdown = 16.67;
+    m_renderFlag = true;
+
+    for (int i{}; i < 16; ++i)
+        m_stack[i] = 0;
+
+    for (int i{}; i < 16; ++i)
+        m_registers.set(i, 0, true);
+    m_registers.clearReadWrittenFlags();
+
+    std::memset(m_memory, 0, 0x1000);
+
+    for (int i{}; i < 64 * 32; ++i)
+        m_frameBuffer[i] = 0;
+
+    loadFontSet();
+    loadFile(m_romFilename);
+
+    renderDebugInfoIfInDebugMode();
+    renderFrameBuffer();
 }
 
 void Chip8::emulateCycle()
