@@ -237,6 +237,45 @@ void Chip8::initVideo()
     SDL_SetWindowMinimumSize(m_window, 64 * 2, 32 * 2);
 }
 
+void Chip8::saveScreenshot() const
+{
+    auto generateFilename{[](){ // -> char*
+        char* buffer = new char[64]{};
+        auto epochTime = time(nullptr);
+        strftime(buffer, 64, "%y%m%d%H%M%S.bmp", localtime(&epochTime));
+        buffer[63] = 0;
+
+        return buffer;
+    }};
+
+    uint8_t* pixelData{};
+    int pitch{};
+    if (SDL_LockTexture(m_contentTexture, nullptr, (void**)&pixelData, &pitch))
+    {
+        Logger::err << "Error: Failed to lock content texture to save screenshot: " << SDL_GetError() << Logger::End;
+        return;
+    }
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(pixelData, 64, 32, 24, pitch, SDL_PIXELFORMAT_RGB24);
+    if (!surface)
+    {
+        Logger::err << "Failed to create surface for screenshot: " << SDL_GetError() << Logger::End;
+        SDL_UnlockTexture(m_contentTexture);
+        return;
+    }
+
+    auto filename = generateFilename();
+    Logger::log << "Saving screenshot as \"" << filename << "\"" << Logger::End;
+    if (SDL_SaveBMP(surface, filename))
+    {
+        Logger::err << "Failed to save screenshot: " << SDL_GetError() << Logger::End;
+    }
+    delete[] filename;
+
+    SDL_FreeSurface(surface);
+    SDL_UnlockTexture(m_contentTexture);
+}
+
 void Chip8::deinit()
 {
     if (m_hasDeinitCalled)

@@ -86,6 +86,9 @@ The function keys can be modified in the `config.h` file before compiling.
 ##### P
 Pauses the program. Press again to resume. Disables stepping mode if it is active.
 
+##### F2
+Creates a screenshot of the game and saves it as a BMP image. The filename is the time in the C strftime() format `%y%m%d%H%M%S.bmp`.
+
 ##### F4
 Resets the emulator. All the registers, the stack, the memory and the frame buffer are reset to the default values, then the ROM is loaded in again.
 

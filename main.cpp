@@ -105,6 +105,9 @@ int main(int argc, char** argv)
                         case SHORTCUT_KEYCODE_RESET:
                             chip8.reset();
                             break;
+                        case SHORTCUT_KEYCODE_SCREENSHOT:
+                            chip8.saveScreenshot();
+                            break;
                     }
                     break;
 

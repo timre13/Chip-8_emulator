@@ -225,6 +225,8 @@ public:
     void clearIsReadingKeyStateFlag();
 
     std::string dumpStateToStr();
+
+    void saveScreenshot() const;
 };
 
 #endif // CHIP8_H
