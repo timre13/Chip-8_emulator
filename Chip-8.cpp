@@ -316,9 +316,9 @@ void Chip8::renderFrameBuffer()
 void Chip8::fetchOpcode()
 {
     // Catch the access out of the valid memory address range (0x00 - 0xfff)
-    assert(m_pc <= 0xfff);
+    assert(m_pc <= 0xffe);
     
-    if (m_pc > 0xfff)
+    if (m_pc > 0xffe)
     {
         Logger::err << "Memory accessed out of range" << Logger::End;
         m_hasExited = true;
