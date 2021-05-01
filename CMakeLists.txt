@@ -5,7 +5,7 @@ project(Chip-8_emulator VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
-set(CMAKE_CXX_FLAGS "-O3 -D_REENTRANT")
+set(CMAKE_CXX_FLAGS "-O3 -D_REENTRANT -Wall -Wextra -Wpedantic")
 
 include_directories(/usr/include/SDL2)
 link_libraries(SDL2 SDL2_ttf ncurses)
