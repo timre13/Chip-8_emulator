@@ -1,4 +1,5 @@
 #include <string>
+#include <SDL2/SDL_events.h>
 #include <fstream>
 #include <cassert>
 #include <random>
@@ -52,6 +53,66 @@ constexpr uint8_t keyMapScancode[16]{
     SDL_SCANCODE_F,
     SDL_SCANCODE_V
     };
+
+static void renderText(
+        SDL_Renderer* renderer, SDL_Texture** fontCache,
+        int* cursorRow, int* cursorCol,
+        const std::string& text,
+        const SDL_Color& color={255, 255, 255, 255})
+{
+    static constexpr int charWidthPx = 9;
+    static constexpr int charHeightPx = 16;
+
+    for (size_t i{}; i < text.length(); ++i)
+    {
+        const int character{text[i]};
+        switch (character)
+        {
+        case '\n':
+            ++*cursorRow;
+            *cursorCol = 0;
+            break;
+
+        case '\t':
+            *cursorCol += 4;
+            break;
+
+        case '\v':
+            *cursorRow += 4;
+            *cursorCol = 0;
+            break;
+
+        case '\r':
+            *cursorCol = 0;
+            break;
+
+        case ' ':
+            ++*cursorCol;
+            break;
+
+        default:
+            if (character >= '!' && character <= '~') // If printable character
+            {
+                SDL_Rect destRect{
+                    *cursorCol * charWidthPx + 5, *cursorRow * charHeightPx,
+                    charWidthPx, charHeightPx};
+                const int textureI{character - '!'};
+                SDL_SetTextureColorMod(fontCache[textureI], color.r, color.g, color.b);
+                if (SDL_RenderCopy(renderer, fontCache[textureI], nullptr, &destRect))
+                {
+                    Logger::err << "Failed to copy character texture: " << SDL_GetError() << Logger::End;
+                }
+                ++*cursorCol;
+            }
+            else // If unknown nonprintable character
+            {
+                ++*cursorCol;
+            }
+            break;
+        }
+    }
+}
+
 
 Chip8::Chip8(const std::string& romFilename)
     : m_sp{}
@@ -317,12 +378,10 @@ void Chip8::fetchOpcode()
 {
     // Catch the access out of the valid memory address range (0x00 - 0xfff)
     assert(m_pc <= 0xffe);
-    
+
     if (m_pc > 0xffe)
     {
-        Logger::err << "Memory accessed out of range" << Logger::End;
-        m_hasExited = true;
-        return;
+        panic("PC out of range");
     }
     
     // We swap the upper and lower bits.
@@ -337,6 +396,41 @@ void Chip8::fetchOpcode()
 #endif
     
     m_pc += 2;
+}
+
+void Chip8::panic(const std::string& message)
+{
+    Logger::err << "PANIC: " << message << Logger::End;
+    Logger::log << '\n' << dumpStateToStr() << Logger::End;
+
+    auto _renderText{[this](const std::string& text){
+        int cursorRow{};
+        int cursorCol{};
+        renderText(m_renderer, m_fontCache, &cursorRow, &cursorCol, text, {PANIC_FG_COLOR_R, PANIC_FG_COLOR_G, PANIC_FG_COLOR_B, 255});
+    }};
+    std::string textToRender =
+        "Fatal error: " + message + "\nThis is probably caused by an invalid/damaged ROM.\n\n\n" + dumpStateToStr(false) +
+        "\n\nMore information in the terminal.\nPress escape to exit.";
+
+    SDL_SetWindowFullscreen(m_window, 0);
+    SDL_ShowCursor(true);
+
+    while (true)
+    {
+        SDL_Event event;
+        SDL_PollEvent(&event);
+        if (event.type == SDL_QUIT || (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_ESCAPE))
+            break;
+
+        SDL_SetRenderDrawColor(m_renderer, PANIC_BG_COLOR_R, PANIC_BG_COLOR_G, PANIC_BG_COLOR_B, 255);
+        SDL_RenderClear(m_renderer);
+
+        _renderText(textToRender);
+        SDL_RenderPresent(m_renderer);
+        SDL_Delay(100);
+    }
+
+    std::abort();
 }
 
 void Chip8::whenWindowResized(int width, int height)
@@ -397,28 +491,32 @@ void Chip8::toggleDebugMode()
     whenWindowResized(w, h);
 }
 
-std::string Chip8::dumpStateToStr()
+std::string Chip8::dumpStateToStr(bool dumpAll/*=true*/)
 {
     std::stringstream output;
 
-    output << "Memory:\n";
-    output << std::hex;
-    for (int i{}; i < 0x1000; ++i)
+    if (dumpAll)
     {
-        output << std::setw(2) << std::setfill('0') << +m_memory[i] << ' ';
-        if (i % 32 == 31)
-            output << '\n';
+        output << "Memory:\n";
+        output << std::hex;
+        for (int i{}; i < 0x1000; ++i)
+        {
+            output << std::setw(2) << std::setfill('0') << +m_memory[i] << ' ';
+            if (i % 32 == 31)
+                output << '\n';
+        }
+
+        output << "\nFramebuffer:\n";
+        for (int i{}; i < 64 * 32; ++i)
+        {
+            output << +m_frameBuffer[i] << ' ';
+            if (i % 64 == 63)
+                output << '\n';
+        }
+        output << '\n';
     }
 
-    output << "\nFramebuffer:\n";
-    for (int i{}; i < 64 * 32; ++i)
-    {
-        output << +m_frameBuffer[i] << ' ';
-        if (i % 64 == 63)
-            output << '\n';
-    }
-
-    output << "\nPC=" << std::setw(4) << std::setfill('0') << +m_pc
+    output <<   "PC=" << std::setw(4) << std::setfill('0') << +m_pc
            << ", Op=" << std::setw(4) << std::setfill('0') << +m_opcode
            << ", SP=" << std::setw(1) << std::setfill('0') << +m_sp
            << ", I="  << std::setw(4) << std::setfill('0') << +m_indexReg
@@ -459,75 +557,25 @@ void Chip8::renderDebugInfoIfInDebugMode()
 
     int cursorRow{};
     int cursorCol{};
-
-    auto renderText{[this, &cursorRow, &cursorCol](std::string text, const SDL_Color &color={255, 255, 255, 255}){
-        static constexpr int charWidthPx = 9;
-        static constexpr int charHeightPx = 16;
-
-        for (size_t i{}; i < text.length(); ++i)
-        {
-            const int character{text[i]};
-            switch (character)
-            {
-            case '\n':
-                ++cursorRow;
-                cursorCol = 0;
-                break;
-
-            case '\t':
-                cursorCol += 4;
-                break;
-
-            case '\v':
-                cursorRow += 4;
-                cursorCol = 0;
-                break;
-
-            case '\r':
-                cursorCol = 0;
-                break;
-
-            case ' ':
-                ++cursorCol;
-                break;
-
-            default:
-                if (character >= '!' && character <= '~') // If printable character
-                {
-                    SDL_Rect destRect{
-                        cursorCol * charWidthPx + 5, cursorRow * charHeightPx,
-                        charWidthPx, charHeightPx};
-                    const int textureI{character - '!'};
-                    SDL_SetTextureColorMod(m_fontCache[textureI], color.r, color.g, color.b);
-                    if (SDL_RenderCopy(m_renderer, m_fontCache[textureI], nullptr, &destRect))
-                    {
-                        Logger::err << "Failed to copy character texture: " << SDL_GetError() << Logger::End;
-                    }
-                    ++cursorCol;
-                }
-                else // If unknown nonprintable character
-                {
-                    ++cursorCol;
-                }
-                break;
-            }
-        }
+    auto _renderText{[this, &cursorRow, &cursorCol]
+            (const std::string& text, const SDL_Color& color={255, 255, 255, 255}){
+        renderText(m_renderer, m_fontCache, &cursorRow, &cursorCol, text, color);
     }};
 
-    renderText("Opcode: " + to_hex(m_opcode) + "\n\n");
-    renderText("PC: " + to_hex(m_pc) + "\n\n");
-    renderText("I: " + to_hex(m_indexReg) + "\n\n");
-    renderText("SP: " + to_hex(m_sp) + "\n\n");
+    _renderText("Opcode: " + to_hex(m_opcode) + "\n\n");
+    _renderText("PC: " + to_hex(m_pc) + "\n\n");
+    _renderText("I: " + to_hex(m_indexReg) + "\n\n");
+    _renderText("SP: " + to_hex(m_sp) + "\n\n");
 
-    renderText("Stack:\n");
+    _renderText("Stack:\n");
     for (int i{15}; i >= 0; --i)
-        renderText(to_hex(m_stack[i]) + "\n");
+        _renderText(to_hex(m_stack[i]) + "\n");
 
     constexpr int indent = 17;
 
     cursorRow = 0;
     cursorCol = indent;
-    renderText("Registers:\n");
+    _renderText("Registers:\n");
     for (int i{}; i < 16; ++i)
     {
         cursorCol = indent;
@@ -543,19 +591,19 @@ void Chip8::renderDebugInfoIfInDebugMode()
         else if (isWritten)
             textColor = {255, 0, 0, 255};
 
-        renderText(to_hex(i, 1) + ": " + to_hex(m_registers.get(i, true)) + "\n", textColor);
+        _renderText(to_hex(i, 1) + ": " + to_hex(m_registers.get(i, true)) + "\n", textColor);
     }
-    renderText("\n");
+    _renderText("\n");
 
     cursorCol = indent;
-    renderText("DT: " + to_hex(m_delayTimer) + "\n");
+    _renderText("DT: " + to_hex(m_delayTimer) + "\n");
     cursorCol = indent;
-    renderText("ST: " + to_hex(m_soundTimer) + "\n\n");
+    _renderText("ST: " + to_hex(m_soundTimer) + "\n\n");
 
     if (m_isReadingKey)
     {
         cursorCol = indent;
-        renderText("Reading keys");
+        _renderText("Reading keys");
     }
 
     if (SDL_SetRenderTarget(m_renderer, nullptr))
@@ -619,13 +667,6 @@ void Chip8::emulateCycle()
 #endif
     }};
 
-    auto reportInvalidOpcode{[this](uint8_t opcode){
-        Logger::err << "Invalid opcode: " << to_hex(opcode) << Logger::End;
-        Logger::log << '\n' << dumpStateToStr() << Logger::End;
-
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, TITLE, "Invalid opcode, see the terminal for more information", m_window);
-    }};
-
     Logger::log << std::hex;
 
     switch (m_opcode & 0xf000)
@@ -652,8 +693,7 @@ void Chip8::emulateCycle()
                     break;
                     
                 default:
-                    reportInvalidOpcode(m_opcode);
-                    break;
+                    panic("Invalid opcode.");
             }
             break;
             
@@ -769,8 +809,7 @@ void Chip8::emulateCycle()
                     break;
                 
                 default:
-                    reportInvalidOpcode(m_opcode);
-                    break;
+                    panic("Invalid opcode.");
             }
             break;
         
@@ -803,9 +842,12 @@ void Chip8::emulateCycle()
             int x{m_registers.get((m_opcode & 0x0f00) >> 8)};
             int y{m_registers.get((m_opcode & 0x00f0) >> 4)};
             int height{m_opcode & 0x000f};
+
+            if (m_indexReg + height >= 0xfff)
+                panic("Invalid sprite address/height");
             
             m_registers.set(0xf, 0);
-            
+
             for (int cy{}; cy < height; ++cy)
             {
                 uint8_t line{m_memory[m_indexReg + cy]};
@@ -869,8 +911,7 @@ void Chip8::emulateCycle()
                 }
                 
                 default:
-                    reportInvalidOpcode(m_opcode);
-                    break;
+                    panic("Invalid opcode");
             }
         break;
         
@@ -997,14 +1038,12 @@ void Chip8::emulateCycle()
                 }
                 
                 default:
-                    reportInvalidOpcode(m_opcode);
-                    break;
+                    panic("Invalid opcode.");
             }
         break;
             
         default:
-            reportInvalidOpcode(m_opcode);
-            break;
+            panic("Invalid opcode.");
     }
 
     if (m_timerDecrementCountdown <= 0)

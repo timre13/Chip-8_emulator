@@ -180,6 +180,12 @@ private:
     
     void fetchOpcode();
 
+    /*
+     * Should be called when a serious error happens.
+     * Displays some info, waits for escape key and `abort()`s.
+     */
+    [[noreturn]] void panic(const std::string& message);
+
 public:
     Chip8(const std::string& romFilename);
 
@@ -220,7 +226,10 @@ public:
     inline void clearLastRegisterOperationFlags() { m_registers.clearReadWrittenFlags(); }
     inline void clearIsReadingKeyStateFlag() { m_isReadingKey = false; }
 
-    std::string dumpStateToStr();
+    /*
+     * If `dumpAll` is true, the memory and the screenbuffer are dumped, too.
+     */
+    std::string dumpStateToStr(bool dumpAll=true);
 
     void saveScreenshot() const;
 

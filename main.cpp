@@ -4,8 +4,6 @@
 #include <filesystem>
 #include <algorithm>
 
-#define NDEBUG
-
 #include "config.h"
 #include "Chip-8.h"
 #include "Logger.h"

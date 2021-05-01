@@ -45,6 +45,17 @@
 #define FG_COLOR_G (uint8_t)185
 #define FG_COLOR_B (uint8_t)34
 
+// Panic screen background
+#define PANIC_BG_COLOR_R (uint8_t)8
+#define PANIC_BG_COLOR_G (uint8_t)39
+#define PANIC_BG_COLOR_B (uint8_t)245
+
+// Panic screen foreground
+#define PANIC_FG_COLOR_R (uint8_t)255
+#define PANIC_FG_COLOR_G (uint8_t)255
+#define PANIC_FG_COLOR_B (uint8_t)255
+
+
 //-------------------------------- Shortcuts -----------------------------------
 
 // See: https://wiki.libsdl.org/SDL_Keycode
