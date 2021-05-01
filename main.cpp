@@ -24,33 +24,31 @@ int main(int argc, char** argv)
     {
         FileChooser fileChooser{"./roms", "ch8"};
         romFilename = fileChooser.get();
+        // If the user canceled the file selection, quit.
+        if (romFilename.size() == 0)
+            return 0;
     }
-    
-    // If the user canceled the file selection, quit.
-    if (romFilename.size() == 0)
-        return 0;
     
     Logger::log << "Filename: " << romFilename << Logger::End;
 
     Chip8 chip8{romFilename};
-    chip8.whenWindowResized(64*20, 32*20);
+    chip8.whenWindowResized(64 * 20, 32 * 20);
     
     Logger::log << std::hex;
     
-    double emulationSpeed{1.0};
-    int frameDelay{};
-    frameDelay = 1000.0/500/emulationSpeed;
+    double emulationSpeed = 1.0;
+    int frameDelay = 1000.0 / 500 / emulationSpeed;
     chip8.setSpeedPerc(100);
     
-    bool isRunning{true};
-    bool wasPaused{false};
-    bool isSteppingMode{false};
-    bool shouldStep{false}; // no effect when not in stepping mode
-    double renderUpdateCountdown{0}; // Decremented and when 0, the renderer is updated
+    bool isRunning = true;
+    bool wasPaused{};
+    bool isSteppingMode{};
+    bool shouldStep{}; // no effect when not in stepping mode
+    double renderUpdateCountdown{}; // Decremented and when 0, the renderer is updated
+
     while (isRunning && !chip8.hasExited())
     {
         SDL_Event event;
-
         while (SDL_PollEvent(&event))
         {
             switch (event.type)
@@ -66,45 +64,56 @@ int main(int argc, char** argv)
                             chip8.togglePause();
                             isSteppingMode = false;
                             break;
+
                         case SHORTCUT_KEYCODE_QUIT:
                             isRunning = false;
                             break;
+
                         case SHORTCUT_KEYCODE_FULLSCREEN:
                             chip8.toggleFullscreen();
                             break;
+
                         case SHORTCUT_KEYCODE_DEBUG_MODE:
                             chip8.toggleDebugMode();
                             break;
+
                         case SHORTCUT_KEYCODE_TOGGLE_CURSOR:
                             chip8.toggleCursor();
                             break;
+
                         case SHORTCUT_KEYCODE_STEP_INST:
                             shouldStep = true;
                             break;
+
                         case SHORTCUT_KEYCODE_STEPPING_MODE:
                             isSteppingMode = !isSteppingMode;
                             chip8.unpause();
                             break;
+
                         case SHORTCUT_KEYCODE_DUMP_STATE:
                             Logger::log << '\n' << chip8.dumpStateToStr() << Logger::End;
                             break;
+
                         case SHORTCUT_KEYCODE_INC_SPEED:
                             emulationSpeed += 0.05;
                             if (emulationSpeed > 10)
                                 emulationSpeed = 10;
-                            frameDelay = 1000.0/500/emulationSpeed;
+                            frameDelay = 1000.0 / 500 / emulationSpeed;
                             chip8.setSpeedPerc(emulationSpeed * 100);
                             break;
+
                         case SHORTCUT_KEYCODE_DEC_SPEED:
                             emulationSpeed -= 0.05;
                             if (emulationSpeed < 0.05)
                                 emulationSpeed = 0.05;
-                            frameDelay = 1000.0/500/emulationSpeed;
+                            frameDelay = 1000.0 / 500 / emulationSpeed;
                             chip8.setSpeedPerc(emulationSpeed * 100);
                             break;
+
                         case SHORTCUT_KEYCODE_RESET:
                             chip8.reset();
                             break;
+
                         case SHORTCUT_KEYCODE_SCREENSHOT:
                             chip8.saveScreenshot();
                             break;

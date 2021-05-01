@@ -35,7 +35,7 @@ public:
 
 private:
     // Whether this is the beginning of the line
-    bool m_isBeginning{true};
+    bool m_isBeginning = true;
     // The logger type: info, error, etc.
     Type m_type{};
 

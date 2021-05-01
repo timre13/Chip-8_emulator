@@ -11,30 +11,30 @@
 
 #define FILECHOOSER_TITLE "Choose a file"
 
-class FileChooser
+class FileChooser final
 {
 private:
     std::vector<std::string> fileList;
 
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    TTF_Font *font;
+    SDL_Window* window{};
+    SDL_Renderer* renderer{};
+    TTF_Font* font{};
     
     int chosenFileI{};
 
-public:
-    FileChooser(const std::string &directory, const std::string &extension="*");
 
-    std::string get();
+    int getFileList(const std::string& directory, const std::string& extension);
 
-private:
-    int getFileList(const std::string &directory, const std::string &extension);
-    
-    void drawFileList();
-    void drawTitle(const std::string &title);
-    void drawSelector();
+    void drawFileList() const;
+    void drawTitle(const std::string& title) const;
+    void drawSelector() const;
 
     void deinit();
+
+public:
+    FileChooser(const std::string& directory, const std::string& extension="*");
+
+    std::string get() const;
 };
 
 #endif // SDL_FILE_CHOOSER

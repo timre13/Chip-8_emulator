@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-int FileChooser::getFileList(const std::string &directory, const std::string &extension)
+int FileChooser::getFileList(const std::string& directory, const std::string& extension)
 {
     std::filesystem::recursive_directory_iterator files{};
     try
@@ -13,7 +13,7 @@ int FileChooser::getFileList(const std::string &directory, const std::string &ex
             directory,
             std::filesystem::directory_options::skip_permission_denied};
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "", (std::string("Failed to list directory: ") + e.what()).c_str(), window);
         return 1;
@@ -21,13 +21,13 @@ int FileChooser::getFileList(const std::string &directory, const std::string &ex
     
     bool shouldFilter{extension.compare("*") != 0};
 
-    for (auto &file : files)
+    for (auto& file : files)
     {
         std::string fileExtension{"*"};
         if (shouldFilter)
         {
             size_t dotPos{std::string(file.path()).find_last_of('.')};
-            fileExtension = std::string(file.path()).substr(dotPos == std::string::npos ? std::string::npos : dotPos+1);
+            fileExtension = std::string(file.path()).substr(dotPos == std::string::npos ? std::string::npos : dotPos + 1);
         }
 
         if (std::filesystem::is_regular_file(file) && (fileExtension.compare(extension) == 0))
@@ -39,12 +39,12 @@ int FileChooser::getFileList(const std::string &directory, const std::string &ex
     return 0;
 }
 
-void FileChooser::drawTitle(const std::string &title)
+void FileChooser::drawTitle(const std::string& title) const
 {
     SDL_Surface *textSurface = TTF_RenderText_Solid(font, (fileList.size() ? title : "Empty directory").c_str(), {255, 255, 255, 255});
     
-    SDL_Rect sourceRect{0, 0, textSurface->w,        textSurface->h};
-    SDL_Rect targetRect{10, 10, textSurface->w / 3,    textSurface->h / 3};
+    SDL_Rect sourceRect{0, 0, textSurface->w, textSurface->h};
+    SDL_Rect targetRect{10, 10, textSurface->w / 3, textSurface->h / 3};
     
     SDL_Texture* textTexture{SDL_CreateTextureFromSurface(renderer, textSurface)};
     
@@ -54,21 +54,21 @@ void FileChooser::drawTitle(const std::string &title)
     SDL_FreeSurface(textSurface);
 }
 
-void FileChooser::drawFileList()
+void FileChooser::drawFileList() const
 {
     for (int i{}; i < static_cast<int>(fileList.size()); ++i)
     {
-        int y{500-chosenFileI*30+i*30};
+        int y{500 - chosenFileI * 30 + i * 30};
         
         if (y  < 1000 && y > 0)
         {
             SDL_Surface *textSurface = TTF_RenderText_Blended(
                 font,
                 fileList[i].c_str(),
-                {255, 255, 255, static_cast<uint8_t>(255-abs(500-y)/2)});
+                {255, 255, 255, static_cast<uint8_t>(255 - abs(500 - y) / 2)});
             
-            SDL_Rect sourceRect{0, 0, textSurface->w,        textSurface->h};
-            SDL_Rect targetRect{0, y, textSurface->w / 5,    textSurface->h / 5};
+            SDL_Rect sourceRect{0, 0, textSurface->w, textSurface->h};
+            SDL_Rect targetRect{0, y, textSurface->w / 5, textSurface->h / 5};
             
             SDL_Texture* textTexture{SDL_CreateTextureFromSurface(renderer, textSurface)};
             
@@ -80,20 +80,19 @@ void FileChooser::drawFileList()
     }
 }
 
-void FileChooser::drawSelector()
+void FileChooser::drawSelector() const
 {
     SDL_SetRenderDrawColor(renderer, 100, 100, 100, 100);
     SDL_Rect selectorRect{0, 500, 800, 25};
     SDL_RenderFillRect(renderer, &selectorRect);
 }
 
-FileChooser::FileChooser(const std::string &directory, const std::string &extension/*="*"*/)
+FileChooser::FileChooser(const std::string& directory, const std::string& extension/*="*"*/)
 {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     
     window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 1000, SDL_WINDOW_ALLOW_HIGHDPI);
-    
     if (!window)
     {
         Logger::err << "Unable to create window" << Logger::End;
@@ -101,7 +100,6 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
     }
     
     renderer = SDL_CreateRenderer(window, -1, 0);
-    
     if (!renderer)
     {
         Logger::err << "Unable to create renderer" << Logger::End;
@@ -109,7 +107,6 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
     }
     
     font = TTF_OpenFont("./Anonymous_Pro.ttf", 100);
-    
     if (!font)
     {
         Logger::err << "Unable to open font file." << Logger::End;
@@ -198,23 +195,20 @@ FileChooser::FileChooser(const std::string &directory, const std::string &extens
     deinit();
 }
 
-std::string FileChooser::get()
+std::string FileChooser::get() const
 {
     // Return an empty string if there are no files to choose from
-    if (fileList.size() == 0)
+    // or the user closed the window
+    if (fileList.size() == 0 || chosenFileI == -1)
         return "";
 
-    if (chosenFileI != -1)
-        return fileList.at(chosenFileI);
-    
-    return ""; // return an empty string if the user closed the window
+    return fileList.at(chosenFileI);
 }
 
 void FileChooser::deinit()
 {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    
     TTF_CloseFont(font);
     
     TTF_Quit();

@@ -16,13 +16,13 @@
 
 #define TITLE "CHIP-8 Emulator"
 
-class Registers
+class Registers final
 {
 private:
     uint8_t m_registers[16]{};
 
-    bool    m_isRegisterWritten[16]{};
-    bool    m_isRegisterRead[16]{};
+    bool m_isRegisterWritten[16]{};
+    bool m_isRegisterRead[16]{};
 
 public:
     uint8_t get(int index, bool isInternal=false)
@@ -55,38 +55,39 @@ public:
         memset(m_isRegisterRead, false, sizeof(m_isRegisterRead));
     }
 
-    bool getIsRegisterWritten(int index)
+    inline bool getIsRegisterWritten(int index) const
     {
         return m_isRegisterWritten[index];
     }
 
-    bool getIsRegisterRead(int index)
+    inline bool getIsRegisterRead(int index) const
     {
         return m_isRegisterRead[index];
     }
 };
 
-class Framebuffer
+class Framebuffer final
 {
 public:
-    int m_frameBuffer[64*32]{};
+    int m_frameBuffer[64 * 32]{};
     
     Framebuffer()
-    {}
+    {
+    }
 
     int& operator[](int index)
     {
         //assert(index >= 0);
         //assert(index < 32);
         
-        bool isOutOfBounds{false};
+        bool isOutOfBounds{};
         
         if (index < 0)
         {
             isOutOfBounds = true;
             Logger::warn << "Frame buffer index less than 0" << Logger::End;
         }
-        if (index >= 64*32)
+        if (index >= 64 * 32)
         {
             isOutOfBounds = true;
             Logger::warn << "Frame buffer index out of bounds" << Logger::End;
@@ -101,37 +102,37 @@ public:
     void print()
     {
         Logger::log << "--- frame buffer ---\n";
-        for (int i{}; i < 64*32; ++i)
+        for (int i{}; i < 64 * 32; ++i)
         {
             Logger::log << m_frameBuffer[i];
-            if (!((i+1) % 64))
+            if ((i + 1) % 64 == 0)
                 Logger::log << '\n';
         }
         Logger::log << "--------------------" << Logger::End;
     }
 };
 
-class Chip8
+class Chip8 final
 {
 private:
     // stack
     uint16_t m_stack[16]{};
-    // stack pointer
-    uint8_t m_sp          = 0;
+    // stack pointer (4 bits)
+    uint8_t m_sp: 4; // It will be init-ed in ctor
     // registers
     Registers m_registers;
     // memory - 0x00 - 0xfff
     uint8_t m_memory[0xfff+1]{};
     // program counter - the programs start at 0x200
-    uint16_t m_pc         = 0x200;
+    uint16_t m_pc = 0x200;
     // current opcode
-    uint16_t m_opcode     = 0;
+    uint16_t m_opcode = 0;
     // index register
-    uint16_t m_indexReg          = 0;
+    uint16_t m_indexReg = 0;
     // delay timer
-    uint8_t m_delayTimer  = 0;
+    uint8_t m_delayTimer = 0;
     // sound timer
-    uint8_t m_soundTimer  = 0;
+    uint8_t m_soundTimer = 0;
     // framebuffer - stores which pixels are turned on
     // We don't fill it with zeros, because the original implementation doesn't do so
     Framebuffer m_frameBuffer;
@@ -140,10 +141,10 @@ private:
     // rom file size in bytes
     int m_romSize;
 
-    SDL_Window *m_window{nullptr};
+    SDL_Window* m_window{};
     int m_windowWidth{};
     int m_windowHeight{};
-    SDL_Renderer *m_renderer{nullptr};
+    SDL_Renderer* m_renderer{};
 
     // A texture where we render the game
     SDL_Texture* m_contentTexture{};
@@ -153,43 +154,37 @@ private:
     // Every character from code 21 to code 126 prerendered
     SDL_Texture* m_fontCache['~' - '!' + 1]{};
 
-    int m_scale{1};
-    bool m_isFullscreen{false};
-    bool m_isDebugMode{false};
-    bool m_isPaused{false};
-    bool m_isReadingKey{false};
+    int m_scale = 1;
+    bool m_isFullscreen{};
+    bool m_isDebugMode{};
+    bool m_isPaused{};
+    bool m_isReadingKey{};
 
     // Helps to decrement the sound and delay timers at 60 FPS
     // This is decremented after every frame and if 0, the timers decremented.
-    double m_timerDecrementCountdown{16.67};
+    double m_timerDecrementCountdown = 16.67;
 
-    bool m_hasDeinitCalled{false};
+    bool m_hasDeinitCalled{};
 
     // Whether the program should exit
-    bool m_hasExited{false};
+    bool m_hasExited{};
     // Marks whether we need to redraw the framebuffer
     bool m_renderFlag = true;
 
     int m_emulSpeedPerc{};
     int m_frameDelay{};
     
-    void loadFile(std::string romFilename);
+    void loadFile(const std::string& romFilename);
     void loadFontSet();
     void initVideo();
     
     void fetchOpcode();
-    
-    void turnOnFullscreen();
-    void turnOffFullscreen();
 
 public:
-    Chip8(const std::string &romFilename);
-    ~Chip8();
+    Chip8(const std::string& romFilename);
 
     void reset();
     
-    void deinit();
-
     void emulateCycle();
     void renderFrameBuffer();
 
@@ -204,29 +199,33 @@ public:
     
     void updateWindowTitle();
 
-    inline void togglePause() { m_isPaused = !m_isPaused; updateWindowTitle(); };
-    inline void pause() { m_isPaused = true; updateWindowTitle(); };
-    inline void unpause() { m_isPaused = false; updateWindowTitle(); };
+    inline void togglePause() { m_isPaused = !m_isPaused; updateWindowTitle(); }
+    inline void pause() { m_isPaused = true; updateWindowTitle(); }
+    inline void unpause() { m_isPaused = false; updateWindowTitle(); }
     inline bool isPaused() const { return m_isPaused; }
     
     void whenWindowResized(int width, int height);
 
     void toggleFullscreen();
     void toggleDebugMode();
-    void toggleCursor();
+    inline void toggleCursor() { SDL_ShowCursor(!SDL_ShowCursor(-1)); }
 
     void renderDebugInfoIfInDebugMode();
 
-    uint32_t getWindowID();
+    inline uint32_t getWindowID() const { return SDL_GetWindowID(m_window); }
+
     inline bool hasExited() const { return m_hasExited; }
     inline bool getRenderFlag() const { return m_renderer; }
 
-    void clearLastRegisterOperationFlags();
-    void clearIsReadingKeyStateFlag();
+    inline void clearLastRegisterOperationFlags() { m_registers.clearReadWrittenFlags(); }
+    inline void clearIsReadingKeyStateFlag() { m_isReadingKey = false; }
 
     std::string dumpStateToStr();
 
     void saveScreenshot() const;
+
+    void deinit();
+    ~Chip8();
 };
 
 #endif // CHIP8_H

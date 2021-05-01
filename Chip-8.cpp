@@ -53,7 +53,8 @@ constexpr uint8_t keyMapScancode[16]{
     SDL_SCANCODE_V
     };
 
-Chip8::Chip8(const std::string &romFilename)
+Chip8::Chip8(const std::string& romFilename)
+    : m_sp{}
 {
     std::srand(std::time(nullptr)); // initialize rand()
     std::rand(); // drop the first result
@@ -69,14 +70,12 @@ Chip8::Chip8(const std::string &romFilename)
     m_romFilename = romFilename;
 }
 
-void Chip8::loadFile(std::string romFilename)
+void Chip8::loadFile(const std::string& romFilename)
 {
     Logger::log << "Emulated memory size: " << sizeof(m_memory) / sizeof(m_memory[0]) << Logger::End;
     
     Logger::log << "Opening file: " << romFilename << Logger::End;
-    
     FILE *romFile = fopen(romFilename.c_str(), "rb");
-    
     if (!romFile)
     {
         Logger::err << "Unable to open file: " << romFilename << Logger::End;
@@ -86,19 +85,13 @@ void Chip8::loadFile(std::string romFilename)
     }
     
     fseek(romFile, 0, SEEK_END);
-    
     m_romSize = ftell(romFile);
-    
     fseek(romFile, 0, SEEK_SET);
-    
     Logger::log << "File size: " << std::dec << m_romSize << " / 0x" << std::hex << m_romSize << " bytes" << Logger::End;
 
-    fread(m_memory+512, 8, m_romSize, romFile);
-
+    fread(m_memory + 512, 8, m_romSize, romFile);
     auto copied = ftell(romFile);
-    
     Logger::log << "Copied: " << std::dec << copied << std::hex << " bytes" << Logger::End;
-
     if (copied != m_romSize)
     {
         Logger::err << "Unable to copy to buffer" << Logger::End;
@@ -108,13 +101,12 @@ void Chip8::loadFile(std::string romFilename)
     }
 
     Logger::log << '\n' << "--- START OF MEMORY ---" << Logger::End;
-
-    for (int i{}; i < 0xfff+1; ++i)
+    for (int i{}; i < 0xfff + 1; ++i)
     {
         Logger::log << static_cast<int>(m_memory[i]) << ' ';
-        if (i == 0x200-1)
+        if (i == 0x200 - 1)
             Logger::log << '\n' << "--- START OF PROGRAM ---" << '\n';
-        if ((i) == (m_romSize+511))
+        if (i == (m_romSize + 511))
             Logger::log << '\n' << "--- END OF PROGRAM ---" << '\n';
         if (i == 0xfff)
             Logger::log << '\n' << "--- END OF MEMORY ---" << '\n';
@@ -149,13 +141,11 @@ void Chip8::initVideo()
     }
 
     Logger::log << "Creating window" << Logger::End;
-    
     m_window = SDL_CreateWindow(
-            (std::string(TITLE)+" - Loading...").c_str(),
+            TITLE " - Loading...",
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            64*20, 32*20,
-            SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_RESIZABLE);
-    
+            64 * 20, 32 * 20,
+            SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
     if (!m_window)
     {
         Logger::err << "Unable to create window. " << SDL_GetError() << Logger::End;
@@ -163,9 +153,7 @@ void Chip8::initVideo()
     }
     
     Logger::log << "Creating renderer" << Logger::End;
-    
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-    
     if (!m_renderer)
     {
         Logger::err << "Unable to create renderer. " << SDL_GetError() << Logger::End;
@@ -190,14 +178,13 @@ void Chip8::initVideo()
     }
     
     Logger::log << "Initializing SDL2_ttf" << Logger::End;
-
     if (TTF_Init())
     {
         Logger::err << "Unable to initialize SDL2_ttf: " << TTF_GetError() << Logger::End;
         std::exit(2);
     }
-    Logger::log << "Loading font" << Logger::End;
 
+    Logger::log << "Loading font" << Logger::End;
     TTF_Font* font = TTF_OpenFont("Anonymous_Pro.ttf", 16);
     if (!font)
     {
@@ -281,7 +268,7 @@ void Chip8::deinit()
     if (m_hasDeinitCalled)
         return;
     
-    SDL_SetWindowTitle(m_window, (std::string(TITLE)+" - Exiting...").c_str());
+    SDL_SetWindowTitle(m_window, TITLE " - Exiting...");
     updateRenderer();
 
     Logger::log << '\n' << "----- deinit -----" << Logger::End;
@@ -315,7 +302,7 @@ void Chip8::renderFrameBuffer()
     {
         for (int y{}; y < 32; ++y)
         {
-            const int currentPixelI{y*64+x};
+            const int currentPixelI{y * 64 + x};
             if (m_frameBuffer[currentPixelI])
                 Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{FG_COLOR_R, FG_COLOR_G, FG_COLOR_B});
             else
@@ -341,7 +328,7 @@ void Chip8::fetchOpcode()
     // We swap the upper and lower bits.
     // The opcode is 16 bits long, so we have to
     // shift the left part of the opcode and add the right part.
-    m_opcode = ((m_memory[m_pc]<<8) | m_memory[m_pc+1]);
+    m_opcode = (m_memory[m_pc] << 8) | m_memory[m_pc + 1];
     
 #if VERBOSE_LOG
     Logger::log << std::hex;
@@ -389,47 +376,14 @@ void Chip8::updateRenderer()
     SDL_RenderPresent(m_renderer);
 }
 
-uint32_t Chip8::getWindowID()
-{
-    return SDL_GetWindowID(m_window);
-}
-
-void Chip8::clearLastRegisterOperationFlags()
-{
-    m_registers.clearReadWrittenFlags();
-}
-
-void Chip8::turnOnFullscreen()
-{
-    SDL_SetWindowFullscreen(m_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-
-    SDL_ShowCursor(false);
-}
-
-void Chip8::turnOffFullscreen()
-{
-    SDL_SetWindowFullscreen(m_window, 0);
-
-    SDL_ShowCursor(true);
-}
-
 void Chip8::toggleFullscreen()
 {
     m_isFullscreen = !m_isFullscreen;
-
-    if (m_isFullscreen)
-        turnOnFullscreen();
-    else
-        turnOffFullscreen();
+    SDL_SetWindowFullscreen(m_window, m_isFullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    SDL_ShowCursor(!m_isFullscreen);
 
     // Render the frame buffer with the new scaling
     renderFrameBuffer();
-}
-
-void Chip8::toggleCursor()
-{
-    // SDL_ShowCursor(-1) returns whether the cursor is shown
-    SDL_ShowCursor(!SDL_ShowCursor(-1));
 }
 
 void Chip8::toggleDebugMode()
@@ -441,11 +395,6 @@ void Chip8::toggleDebugMode()
     // Call the window resize function to calculate the new
     // scale, so the debug info can fit in the window
     whenWindowResized(w, h);
-}
-
-void Chip8::clearIsReadingKeyStateFlag()
-{
-    m_isReadingKey = false;
 }
 
 std::string Chip8::dumpStateToStr()
@@ -512,8 +461,8 @@ void Chip8::renderDebugInfoIfInDebugMode()
     int cursorCol{};
 
     auto renderText{[this, &cursorRow, &cursorCol](std::string text, const SDL_Color &color={255, 255, 255, 255}){
-        static constexpr int charWidthPx{9};
-        static constexpr int charHeightPx{16};
+        static constexpr int charWidthPx = 9;
+        static constexpr int charHeightPx = 16;
 
         for (size_t i{}; i < text.length(); ++i)
         {
@@ -574,7 +523,7 @@ void Chip8::renderDebugInfoIfInDebugMode()
     for (int i{15}; i >= 0; --i)
         renderText(to_hex(m_stack[i]) + "\n");
 
-    constexpr int indent{17};
+    constexpr int indent = 17;
 
     cursorRow = 0;
     cursorCol = indent;
@@ -690,15 +639,15 @@ void Chip8::emulateCycle()
                     
                 case 0x00e0: // CLS
                     logOpcode("CLS");
-                    for (int i{}; i < 64*32; ++i)
+                    for (int i{}; i < 64 * 32; ++i)
                         m_frameBuffer[i] = 0;
                     m_renderFlag = true;
                     break;
                 
                 case 0x00ee: // RET
                     logOpcode("RET");
-                    m_pc = m_stack[m_sp-1];
-                    m_stack[m_sp-1] = 0;
+                    m_pc = m_stack[m_sp - 1];
+                    m_stack[m_sp - 1] = 0;
                     --m_sp;
                     break;
                     
@@ -722,30 +671,30 @@ void Chip8::emulateCycle()
             
         case 0x3000: // SE
             logOpcode("SE");
-            if (m_registers.get((m_opcode & 0x0f00)>>8) == (m_opcode & 0x00ff))
+            if (m_registers.get((m_opcode & 0x0f00) >> 8) == (m_opcode & 0x00ff))
                 m_pc += 2;
             break;
             
         case 0x4000: // SNE
             logOpcode("SNE");
-            if (m_registers.get((m_opcode & 0x0f00)>>8) != (m_opcode & 0x00ff))
+            if (m_registers.get((m_opcode & 0x0f00) >> 8) != (m_opcode & 0x00ff))
                 m_pc += 2;
             break;
         
         case 0x5000: // SE Vx, Vy
             logOpcode("SE Vx, Vy");
-            if (m_registers.get((m_opcode & 0x0f00)>>8) == m_registers.get((m_opcode & 0x00f0)>>4))
+            if (m_registers.get((m_opcode & 0x0f00) >> 8) == m_registers.get((m_opcode & 0x00f0) >> 4))
                 m_pc += 2;
             break;
             
         case 0x6000: // LD Vx, byte
             logOpcode("LD Vx, byte");
-            m_registers.set((m_opcode & 0x0f00)>>8, m_opcode & 0x00ff);
+            m_registers.set((m_opcode & 0x0f00) >> 8, m_opcode & 0x00ff);
             break;
         
         case 0x7000: // ADD Vx, byte
             logOpcode("ADD Vx, byte");
-            m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) + (m_opcode & 0x00ff));
+            m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) + (m_opcode & 0x00ff));
             break;
         
         case 0x8000:
@@ -753,29 +702,29 @@ void Chip8::emulateCycle()
             {
                 case 0: // LD Vx, Vy
                     logOpcode("LD Vx, Vy");
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4));
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4));
                     break;
                 
                 case 1: // OR Vx, Vy
                     logOpcode("OR Vx, Vy");
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) | m_registers.get((m_opcode & 0x00f0)>>4));
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) | m_registers.get((m_opcode & 0x00f0) >> 4));
                     break;
                 
                 case 2: // AND Vx, Vy
                     logOpcode("AND Vx, Vy");
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) & m_registers.get((m_opcode & 0x00f0)>>4));
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) & m_registers.get((m_opcode & 0x00f0) >> 4));
                     break;
                 
                 case 3: // XOR Vx, Vy
                     logOpcode("XOR Vx, Vy");
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) ^ m_registers.get((m_opcode & 0x00f0)>>4));
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) ^ m_registers.get((m_opcode & 0x00f0) >> 4));
                     break;
                 
                 case 4: // ADD Vx, Vy
                     logOpcode("ADD Vx, Vy");
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) + m_registers.get((m_opcode & 0x00f0)>>4));
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) + m_registers.get((m_opcode & 0x00f0) >> 4));
 
-                    if (m_registers.get((m_opcode & 0x00f0)>>4) > (0xff - m_registers.get((m_opcode & 0x0f00)>>8)))
+                    if (m_registers.get((m_opcode & 0x00f0) >> 4) > (0xff - m_registers.get((m_opcode & 0x0f00) >> 8)))
                         m_registers.set(0xf, 1);
                     else
                         m_registers.set(0xf, 0);
@@ -783,39 +732,39 @@ void Chip8::emulateCycle()
                 
                 case 5: // SUB Vx, Vy
                     logOpcode("SUB Vx, Vy");
-                    m_registers.set(0xf, !(m_registers.get((m_opcode & 0x0f00)>>8) < m_registers.get((m_opcode & 0x00f0)>>4)));
+                    m_registers.set(0xf, !(m_registers.get((m_opcode & 0x0f00) >> 8) < m_registers.get((m_opcode & 0x00f0) >> 4)));
 
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) - m_registers.get((m_opcode & 0x00f0)>>4));
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) - m_registers.get((m_opcode & 0x00f0) >> 4));
                     break;
                 
                 case 6: // SHR Vx {, Vy}
                     logOpcode("SHR Vx {, Vy}");
                     // Mark whether overflow occurs.
-                    m_registers.set(0xf, m_registers.get((m_opcode & 0x0f00)>>8) & 1);
+                    m_registers.set(0xf, m_registers.get((m_opcode & 0x0f00) >> 8) & 1);
 
 #if SHIFT_Y_REG_INSTEAD_OF_X
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) >> 1);
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4) >> 1);
 #else
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) >> 1);
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) >> 1);
 #endif
                     break;
                 
                 case 7: // SUBN Vx, Vy
                     logOpcode("SUBN Vx, Vy");
-                    m_registers.set(0xf, !(m_registers.get((m_opcode & 0x0f00)>>8) > m_registers.get((m_opcode & 0x00f0)>>4)));
+                    m_registers.set(0xf, !(m_registers.get((m_opcode & 0x0f00) >> 8) > m_registers.get((m_opcode & 0x00f0) >> 4)));
 
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) - m_registers.get((m_opcode & 0x0f00)>>8));
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4) - m_registers.get((m_opcode & 0x0f00) >> 8));
                     break;
                 
                 case 0xe: // SHL Vx {, Vy}
                     logOpcode("SDL Vx, {, Vy}");
                     // Mark whether overflow occurs.
-                    m_registers.set(0xf, (m_registers.get((m_opcode & 0x0f00)>>8) >> 7));
+                    m_registers.set(0xf, (m_registers.get((m_opcode & 0x0f00) >> 8) >> 7));
 
 #if SHIFT_Y_REG_INSTEAD_OF_X
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x00f0)>>4) << 1);
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4) << 1);
 #else
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_registers.get((m_opcode & 0x0f00)>>8) << 1);
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) << 1);
 #endif
                     break;
                 
@@ -827,8 +776,8 @@ void Chip8::emulateCycle()
         
         case 0x9000: // SNE Vx, Vy
             logOpcode("SNE Vx, Vy");
-            if (m_registers.get((m_opcode & 0x0f00)>>8) !=
-                m_registers.get((m_opcode & 0x00f0)>>4))
+            if (m_registers.get((m_opcode & 0x0f00) >> 8) !=
+                m_registers.get((m_opcode & 0x00f0) >> 4))
                 m_pc += 2;
             break;
         
@@ -844,7 +793,7 @@ void Chip8::emulateCycle()
         
         case 0xc000: // RND Vx, byte
             logOpcode("RND Vx, byte");
-            m_registers.set((m_opcode & 0x0f00)>>8, (m_opcode & 0x00ff) & static_cast<uint8_t>(std::rand()));
+            m_registers.set((m_opcode & 0x0f00) >> 8, (m_opcode & 0x00ff) & static_cast<uint8_t>(std::rand()));
             break;
         
         case 0xd000: // DRW Vx, Vy, nibble
@@ -867,7 +816,7 @@ void Chip8::emulateCycle()
                     
                     if (pixel)
                     {
-                        int index{(x + cx) + (y + cy)*64};
+                        int index{(x + cx) + (y + cy) * 64};
                         
                         if (m_frameBuffer[index])
                             m_registers.set(0xf, 1);
@@ -894,10 +843,10 @@ void Chip8::emulateCycle()
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
 #if VERBOSE_LOG
-                    Logger::log << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00)>>8)]] << Logger::End;
+                    Logger::log << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00) >> 8)]] << Logger::End;
 #endif
                
-                    if (keyState[keyMapScancode[m_registers.get((m_opcode & 0x0f00)>>8)]])
+                    if (keyState[keyMapScancode[m_registers.get((m_opcode & 0x0f00) >> 8)]])
                         m_pc += 2;
                     break;
                 }
@@ -911,10 +860,10 @@ void Chip8::emulateCycle()
                     auto keyState{SDL_GetKeyboardState(nullptr)};
                     
 #if VERBOSE_LOG
-                    Logger::log << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00)>>8)]] << Logger::End;
+                    Logger::log << "KEY: " << keyState[keyMap[m_registers.get((m_opcode & 0x0f00) >> 8)]] << Logger::End;
 #endif
                
-                    if (!(keyState[keyMapScancode[m_registers.get((m_opcode & 0x0f00)>>8)]]))
+                    if (!(keyState[keyMapScancode[m_registers.get((m_opcode & 0x0f00) >> 8)]]))
                         m_pc += 2;
                     break;
                 }
@@ -930,7 +879,7 @@ void Chip8::emulateCycle()
             {
                 case 0x07: // LD Vx, DT
                     logOpcode("LD Vx, DT");
-                    m_registers.set((m_opcode & 0x0f00)>>8, m_delayTimer);
+                    m_registers.set((m_opcode & 0x0f00) >> 8, m_delayTimer);
                     break;
                 
                 case 0x0a: // LD Vx, K
@@ -940,7 +889,7 @@ void Chip8::emulateCycle()
                     SDL_SetWindowTitle(m_window, TITLE " - waiting for keypress");
                     
                     uint16_t pressedKey{};
-                    bool hasValidKeyPressed{false};
+                    bool hasValidKeyPressed{};
                     do
                     {
                         updateRenderer();
@@ -977,7 +926,7 @@ void Chip8::emulateCycle()
                     // Reset the title
                     updateWindowTitle();
                     
-                    m_registers.set((m_opcode & 0x0f00)>>8, pressedKey);
+                    m_registers.set((m_opcode & 0x0f00) >> 8, pressedKey);
                     
 #if VERBOSE_LOG
                     Logger::log << "Loaded key: " << static_cast<int>(pressedKey) << Logger::End;
@@ -988,31 +937,31 @@ void Chip8::emulateCycle()
                 
                 case 0x15: // LD DT, Vx
                     logOpcode("LD DT, Vx");
-                    m_delayTimer = m_registers.get((m_opcode & 0x0f00)>>8);
+                    m_delayTimer = m_registers.get((m_opcode & 0x0f00) >> 8);
                     break;
                 
                 case 0x18: // LD ST, Vx
                     logOpcode("LD ST, Vx");
-                    m_soundTimer = m_registers.get((m_opcode & 0x0f00)>>8);
+                    m_soundTimer = m_registers.get((m_opcode & 0x0f00) >> 8);
                     break;
                 
                 case 0x1e: // ADD I, Vx
                     logOpcode("ADD I, Vx");
-                    m_indexReg += m_registers.get((m_opcode & 0x0f00)>>8);
+                    m_indexReg += m_registers.get((m_opcode & 0x0f00) >> 8);
                     break;
                 
                 case 0x29: // LD F, Vx
                     logOpcode("FD, F, Vx");
-                    m_indexReg = m_registers.get((m_opcode & 0x0f00)>>8)*5;
+                    m_indexReg = m_registers.get((m_opcode & 0x0f00) >> 8) * 5;
 #if VERBOSE_LOG
-                    Logger::log << "FONT LOADED: " << m_registers.get((m_opcode & 0x0f00)>>8) << Logger::End;
+                    Logger::log << "FONT LOADED: " << m_registers.get((m_opcode & 0x0f00) >> 8) << Logger::End;
 #endif
                     break;
                 
                 case 0x33: // LD B, Vx
                 {
                     logOpcode("LD B, Vx");
-                    uint8_t number{m_registers.get((m_opcode & 0x0f00)>>8)};
+                    uint8_t number{m_registers.get((m_opcode & 0x0f00) >> 8)};
                     m_memory[m_indexReg] = (number / 100);
                     m_memory[m_indexReg+1] = ((number / 10) % 10);
                     m_memory[m_indexReg+2] = (number % 10);
@@ -1022,7 +971,7 @@ void Chip8::emulateCycle()
                 case 0x55: // LD [I], Vx
                 {
                     logOpcode("LD [I], Vx");
-                    uint8_t x{static_cast<uint8_t>((m_opcode & 0x0f00)>>8)};
+                    uint8_t x{static_cast<uint8_t>((m_opcode & 0x0f00) >> 8)};
                         
                     for (uint8_t i{}; i <= x; ++i)
                         m_memory[m_indexReg + i] = m_registers.get(i);
@@ -1036,7 +985,7 @@ void Chip8::emulateCycle()
                 case 0x65: // LD Vx, [I]
                 {
                     logOpcode("LD Vx, [I]");
-                    uint8_t x{static_cast<uint8_t>((m_opcode & 0x0f00)>>8)};
+                    uint8_t x{static_cast<uint8_t>((m_opcode & 0x0f00) >> 8)};
                     
                     for (uint8_t i{}; i <= x; ++i)
                         m_registers.set(i, m_memory[m_indexReg + i]);
@@ -1057,7 +1006,7 @@ void Chip8::emulateCycle()
             reportInvalidOpcode(m_opcode);
             break;
     }
-    
+
     if (m_timerDecrementCountdown <= 0)
     {
         if (m_delayTimer > 0)
