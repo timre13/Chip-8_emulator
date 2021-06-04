@@ -11,6 +11,7 @@
 #include <cassert>
 #include <bitset>
 
+#include "config.h"
 #include "Logger.h"
 #include "to_hex.h"
 
@@ -114,6 +115,21 @@ public:
 
 class Chip8 final
 {
+public:
+    enum class InfoMessageValue
+    {
+        None,
+        Pause,
+        Unpause,
+        Reset,
+        Screenshot,
+        EnableSteppingMode,
+        DisableSteppingMode,
+        DecrementSpeed,
+        IncrementSpeed,
+        DumpState,
+    };
+
 private:
     // stack
     uint16_t m_stack[16]{};
@@ -173,7 +189,11 @@ private:
 
     int m_emulSpeedPerc{};
     int m_frameDelay{};
-    
+
+    InfoMessageValue m_infoMessage{};
+    std::string m_infoMessageExtra;
+    float m_infoMessageTimeRemaining{};
+
     void loadFile(const std::string& romFilename);
     void loadFontSet();
     void initVideo();
@@ -201,7 +221,8 @@ public:
         updateWindowTitle();
     }
     
-    void updateRenderer();
+    void copyTexturesToRenderer();
+    inline void updateRenderer() { SDL_RenderPresent(m_renderer); }
     
     void updateWindowTitle();
 
@@ -231,7 +252,15 @@ public:
      */
     std::string dumpStateToStr(bool dumpAll=true);
 
-    void saveScreenshot() const;
+    std::string saveScreenshot() const;
+
+    inline void setInfoMessage(InfoMessageValue message, const std::string& extra="")
+    {
+        m_infoMessage = message;
+        m_infoMessageExtra = extra;
+        m_infoMessageTimeRemaining = MESSAGE_SHOW_TIME_S;
+    }
+    void updateInfoMessage();
 
     void deinit();
     ~Chip8();

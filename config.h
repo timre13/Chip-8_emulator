@@ -55,6 +55,11 @@
 #define PANIC_FG_COLOR_G (uint8_t)255
 #define PANIC_FG_COLOR_B (uint8_t)255
 
+// Font color of messages
+#define MESSAGE_COLOR_R (uint8_t)255
+#define MESSAGE_COLOR_G (uint8_t)255
+#define MESSAGE_COLOR_B (uint8_t)0
+
 
 //-------------------------------- Shortcuts -----------------------------------
 
@@ -72,5 +77,12 @@
 #define SHORTCUT_KEYCODE_DEC_SPEED       SDLK_F7
 #define SHORTCUT_KEYCODE_RESET           SDLK_F4
 #define SHORTCUT_KEYCODE_SCREENSHOT      SDLK_F2
+
+//--------------------------------- Misc. --------------------------------------
+
+/*
+ * How long the messages in the left upper corner should be shown.
+ */
+#define MESSAGE_SHOW_TIME_S 3.0
 
 #endif // CONFIG_H

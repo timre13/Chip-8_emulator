@@ -98,6 +98,7 @@ static void renderText(
                     charWidthPx, charHeightPx};
                 const int textureI{character - '!'};
                 SDL_SetTextureColorMod(fontCache[textureI], color.r, color.g, color.b);
+                SDL_SetTextureAlphaMod(fontCache[textureI], color.a);
                 if (SDL_RenderCopy(renderer, fontCache[textureI], nullptr, &destRect))
                 {
                     Logger::err << "Failed to copy character texture: " << SDL_GetError() << Logger::End;
@@ -285,7 +286,7 @@ void Chip8::initVideo()
     SDL_SetWindowMinimumSize(m_window, 64 * 2, 32 * 2);
 }
 
-void Chip8::saveScreenshot() const
+std::string Chip8::saveScreenshot() const
 {
     auto generateFilename{[](){ // -> char*
         char* buffer = new char[64]{};
@@ -301,7 +302,7 @@ void Chip8::saveScreenshot() const
     if (SDL_LockTexture(m_contentTexture, nullptr, (void**)&pixelData, &pitch))
     {
         Logger::err << "Error: Failed to lock content texture to save screenshot: " << SDL_GetError() << Logger::End;
-        return;
+        return "";
     }
 
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormatFrom(pixelData, 64, 32, 24, pitch, SDL_PIXELFORMAT_RGB24);
@@ -309,19 +310,20 @@ void Chip8::saveScreenshot() const
     {
         Logger::err << "Failed to create surface for screenshot: " << SDL_GetError() << Logger::End;
         SDL_UnlockTexture(m_contentTexture);
-        return;
+        return "";
     }
 
-    auto filename = generateFilename();
+    std::string filename = generateFilename();
     Logger::log << "Saving screenshot as \"" << filename << "\"" << Logger::End;
-    if (SDL_SaveBMP(surface, filename))
+    if (SDL_SaveBMP(surface, filename.c_str()))
     {
         Logger::err << "Failed to save screenshot: " << SDL_GetError() << Logger::End;
     }
-    delete[] filename;
 
     SDL_FreeSurface(surface);
     SDL_UnlockTexture(m_contentTexture);
+
+    return filename;
 }
 
 void Chip8::deinit()
@@ -398,6 +400,59 @@ void Chip8::fetchOpcode()
     m_pc += 2;
 }
 
+void Chip8::updateInfoMessage()
+{
+    if (m_infoMessageTimeRemaining <= 0)
+        return;
+
+    std::string messageStr;
+    switch (m_infoMessage)
+    {
+    case InfoMessageValue::None:
+        return;
+    case InfoMessageValue::Pause:
+        messageStr = "Paused.";
+        break;
+    case InfoMessageValue::Unpause:
+        messageStr = "Unpaused.";
+        break;
+    case InfoMessageValue::Reset:
+        messageStr = "Reset.";
+        break;
+    case InfoMessageValue::Screenshot:
+        assert(m_infoMessageExtra.length());
+        messageStr = "Saved screenshot to \"" + m_infoMessageExtra + "\".";
+        break;
+    case InfoMessageValue::EnableSteppingMode:
+        messageStr = "Enabled stepping mode.";
+        break;
+    case InfoMessageValue::DisableSteppingMode:
+        messageStr = "Disabled stepping mode.";
+        break;
+    case InfoMessageValue::DecrementSpeed:
+        messageStr = "Decremented emulation speed.";
+        break;
+    case InfoMessageValue::IncrementSpeed:
+        messageStr = "Incremented emulation speed.";
+        break;
+    case InfoMessageValue::DumpState:
+        messageStr = "Dumped state to terminal.";
+        break;
+    default:
+        assert(false);
+        return;
+    }
+
+    {
+        int cursorRow{};
+        int cursorCol{};
+        uint8_t alpha = 255 * std::min(m_infoMessageTimeRemaining, 1.0f);
+        renderText(m_renderer, m_fontCache, &cursorRow, &cursorCol, messageStr, {MESSAGE_COLOR_R, MESSAGE_COLOR_G, MESSAGE_COLOR_B, alpha});
+    }
+
+    m_infoMessageTimeRemaining -= m_frameDelay / 1000.0f;
+}
+
 void Chip8::panic(const std::string& message)
 {
     Logger::err << "PANIC: " << message << Logger::End;
@@ -452,7 +507,7 @@ void Chip8::whenWindowResized(int width, int height)
     renderFrameBuffer();
 }
 
-void Chip8::updateRenderer()
+void Chip8::copyTexturesToRenderer()
 {
     SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
     SDL_RenderClear(m_renderer);
@@ -467,7 +522,6 @@ void Chip8::updateRenderer()
         SDL_RenderCopy(m_renderer, m_debuggerTexture, nullptr, &dstRect);
     }
 
-    SDL_RenderPresent(m_renderer);
 }
 
 void Chip8::toggleFullscreen()

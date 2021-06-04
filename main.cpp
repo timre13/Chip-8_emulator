@@ -60,6 +60,9 @@ int main(int argc, char** argv)
                     {
                         case SHORTCUT_KEYCODE_PAUSE:
                             chip8.togglePause();
+                            chip8.setInfoMessage(chip8.isPaused() ?
+                                    Chip8::InfoMessageValue::Pause :
+                                    Chip8::InfoMessageValue::Unpause);
                             isSteppingMode = false;
                             break;
 
@@ -86,10 +89,14 @@ int main(int argc, char** argv)
                         case SHORTCUT_KEYCODE_STEPPING_MODE:
                             isSteppingMode = !isSteppingMode;
                             chip8.unpause();
+                            chip8.setInfoMessage(isSteppingMode ?
+                                    Chip8::InfoMessageValue::EnableSteppingMode :
+                                    Chip8::InfoMessageValue::DisableSteppingMode);
                             break;
 
                         case SHORTCUT_KEYCODE_DUMP_STATE:
                             Logger::log << '\n' << chip8.dumpStateToStr() << Logger::End;
+                            chip8.setInfoMessage(Chip8::InfoMessageValue::DumpState);
                             break;
 
                         case SHORTCUT_KEYCODE_INC_SPEED:
@@ -98,6 +105,7 @@ int main(int argc, char** argv)
                                 emulationSpeed = 10;
                             frameDelay = 1000.0 / 500 / emulationSpeed;
                             chip8.setSpeedPerc(emulationSpeed * 100);
+                            chip8.setInfoMessage(Chip8::InfoMessageValue::IncrementSpeed);
                             break;
 
                         case SHORTCUT_KEYCODE_DEC_SPEED:
@@ -106,14 +114,16 @@ int main(int argc, char** argv)
                                 emulationSpeed = 0.05;
                             frameDelay = 1000.0 / 500 / emulationSpeed;
                             chip8.setSpeedPerc(emulationSpeed * 100);
+                            chip8.setInfoMessage(Chip8::InfoMessageValue::DecrementSpeed);
                             break;
 
                         case SHORTCUT_KEYCODE_RESET:
                             chip8.reset();
+                            chip8.setInfoMessage(Chip8::InfoMessageValue::Reset);
                             break;
 
                         case SHORTCUT_KEYCODE_SCREENSHOT:
-                            chip8.saveScreenshot();
+                            chip8.setInfoMessage(Chip8::InfoMessageValue::Screenshot, chip8.saveScreenshot());
                             break;
                     }
                     break;
@@ -144,7 +154,8 @@ int main(int argc, char** argv)
 
             chip8.renderFrameBuffer();
             chip8.renderDebugInfoIfInDebugMode();
-
+            chip8.copyTexturesToRenderer();
+            chip8.updateInfoMessage();
             chip8.updateRenderer();
 
             SDL_Delay(frameDelay);
@@ -180,6 +191,8 @@ int main(int argc, char** argv)
         }
         
         chip8.renderDebugInfoIfInDebugMode();
+        chip8.copyTexturesToRenderer();
+        chip8.updateInfoMessage();
         chip8.updateRenderer();
 
         SDL_Delay(frameDelay);
