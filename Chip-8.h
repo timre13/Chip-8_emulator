@@ -194,6 +194,8 @@ private:
     std::string m_infoMessageExtra;
     float m_infoMessageTimeRemaining{};
 
+    bool m_shouldShowKeyboardHelp{};
+
     void loadFile(const std::string& romFilename);
     void loadFontSet();
     void initVideo();
@@ -261,6 +263,9 @@ public:
         m_infoMessageTimeRemaining = MESSAGE_SHOW_TIME_S;
     }
     void updateInfoMessage();
+
+    inline void toggleKeyboardHelp() { m_shouldShowKeyboardHelp = !m_shouldShowKeyboardHelp; }
+    void updateOverlay();
 
     void deinit();
     ~Chip8();

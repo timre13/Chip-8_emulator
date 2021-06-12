@@ -77,6 +77,7 @@
 #define SHORTCUT_KEYCODE_DEC_SPEED       SDLK_F7
 #define SHORTCUT_KEYCODE_RESET           SDLK_F4
 #define SHORTCUT_KEYCODE_SCREENSHOT      SDLK_F2
+#define SHORTCUT_KEYCODE_TOGGLE_HELP     SDLK_F1
 
 //--------------------------------- Misc. --------------------------------------
 

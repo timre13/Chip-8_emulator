@@ -9,10 +9,12 @@
 #include "Logger.h"
 #include "sdl_file_chooser.h"
 #include "sound.h"
-
+#include "license.h"
 
 int main(int argc, char** argv)
 {
+    std::cout << LICENSE_STR << std::endl;
+
     std::string romFilename{};
     if (argc > 1)
     {
@@ -125,6 +127,10 @@ int main(int argc, char** argv)
                         case SHORTCUT_KEYCODE_SCREENSHOT:
                             chip8.setInfoMessage(Chip8::InfoMessageValue::Screenshot, chip8.saveScreenshot());
                             break;
+
+                        case SHORTCUT_KEYCODE_TOGGLE_HELP:
+                            chip8.toggleKeyboardHelp();
+                            break;
                     }
                     break;
 
@@ -156,6 +162,7 @@ int main(int argc, char** argv)
             chip8.renderDebugInfoIfInDebugMode();
             chip8.copyTexturesToRenderer();
             chip8.updateInfoMessage();
+            chip8.updateOverlay();
             chip8.updateRenderer();
 
             SDL_Delay(frameDelay);
@@ -193,6 +200,7 @@ int main(int argc, char** argv)
         chip8.renderDebugInfoIfInDebugMode();
         chip8.copyTexturesToRenderer();
         chip8.updateInfoMessage();
+        chip8.updateOverlay();
         chip8.updateRenderer();
 
         SDL_Delay(frameDelay);

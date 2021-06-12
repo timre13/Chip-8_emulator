@@ -1,17 +1,25 @@
 #include <string>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keyboard.h>
+#include <SDL2/SDL_keycode.h>
 #include <fstream>
 #include <cassert>
 #include <random>
 #include <ctime>
 #include <cstring>
 #include <string>
+#include <climits>
 
 #include "Chip-8.h"
 #include "fontset.h"
 #include "sound.h"
 #include "gfx.h"
 #include "config.h"
+#include "license.h"
+
+#define _STR(x) #x
+#define STR(x) _STR(x)
 
 #define DEBUGGER_TEXTURE_W 300
 #define DEBUGGER_TEXTURE_H 420
@@ -451,6 +459,122 @@ void Chip8::updateInfoMessage()
     }
 
     m_infoMessageTimeRemaining -= m_frameDelay / 1000.0f;
+}
+
+void Chip8::updateOverlay()
+{
+    if (!m_shouldShowKeyboardHelp)
+        return;
+
+    std::string messageStr =
+        std::string("------- Keybindings -------")
+        + "\nPause:           " +SDL_GetKeyName(SHORTCUT_KEYCODE_PAUSE)
+        + "\nFullscreen:      " + SDL_GetKeyName(SHORTCUT_KEYCODE_FULLSCREEN)
+        + "\nStepping mode:   " + SDL_GetKeyName(SHORTCUT_KEYCODE_STEPPING_MODE)
+        + "\nStep:            " + SDL_GetKeyName(SHORTCUT_KEYCODE_STEP_INST)
+        + "\nToggle cursor:   " + SDL_GetKeyName(SHORTCUT_KEYCODE_TOGGLE_CURSOR)
+        + "\nDebug mode:      " + SDL_GetKeyName(SHORTCUT_KEYCODE_DEBUG_MODE)
+        + "\nQuit:            " + SDL_GetKeyName(SHORTCUT_KEYCODE_QUIT)
+        + "\nDump state:      " + SDL_GetKeyName(SHORTCUT_KEYCODE_DUMP_STATE)
+        + "\nIncrement speed: " + SDL_GetKeyName(SHORTCUT_KEYCODE_INC_SPEED)
+        + "\nDecrement speed: " + SDL_GetKeyName(SHORTCUT_KEYCODE_DEC_SPEED)
+        + "\nReset state:     " + SDL_GetKeyName(SHORTCUT_KEYCODE_RESET)
+        + "\nTake screenshot: " + SDL_GetKeyName(SHORTCUT_KEYCODE_SCREENSHOT);
+
+    int cursorRow{2};
+    int cursorCol{};
+    renderText(m_renderer, m_fontCache, &cursorRow, &cursorCol, messageStr, {MESSAGE_COLOR_R, MESSAGE_COLOR_G, MESSAGE_COLOR_B, 255});
+
+    SDL_version version{};
+    SDL_GetVersion(&version);
+
+    cursorRow += 2;
+    cursorCol = 0;
+    messageStr =
+    "----------- Compilation info -----------"
+
+    "\nCompiler version:     "
+#ifdef __VERSION__
+     __VERSION__
+#else
+    "N/A"
+#endif
+
+    "\nOptimizations:        "
+#ifdef __OPTIMIZE__
+    "ON"
+#else
+    "OFF"
+#endif
+
+    "\nSize optimizations:   "
+#ifdef __OPTIMIZE_SIZE__
+    "ON"
+#else
+    "OFF"
+#endif
+
+    "\nChar size:            "
+#ifdef CHAR_BIT
+    STR(CHAR_BIT)
+#else
+    "N/A"
+#endif
+    " bits"
+
+    "\nPointer size:         "
+    +std::to_string(sizeof(void*)*8)+
+    " bits"
+
+    "\nByte order:           "
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    "Little Endian"
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    "Big Endian"
+#elif __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
+    "PDP Endian"
+#else
+    "N/A"
+#endif
+
+    "\nCompiled at:          "
+#ifdef __DATE__
+    __DATE__
+#else
+    "N/A"
+#endif
+    " "
+#ifdef __TIME__
+    __TIME__
+#else
+    "N/A"
+#endif
+
+    "\nCompiled SDL version: "
+    STR(SDL_MAJOR_VERSION)
+    "."
+    STR(SDL_MINOR_VERSION)
+    "."
+    STR(SDL_PATCHLEVEL)
+
+    "\nLinked SDL version:   "
+    +std::to_string(version.major)+
+    "."
+    +std::to_string(version.minor)+
+    "."
+    +std::to_string(version.patch)
+
+    ;
+    renderText(m_renderer, m_fontCache, &cursorRow, &cursorCol, messageStr, {MESSAGE_COLOR_R, MESSAGE_COLOR_G, MESSAGE_COLOR_B, 255});
+
+    cursorRow += 3;
+    cursorCol = 0;
+    messageStr =
+        "Licensed under the MIT License\n"
+        "License at: https://github.com/timre13/Chip-8_emulator/blob/master/LICENSE.txt\n"
+        "Source code at: https://github.com/timre13/Chip-8_emulator\n"
+        ;
+    renderText(m_renderer, m_fontCache, &cursorRow, &cursorCol, messageStr, {MESSAGE_COLOR_R, MESSAGE_COLOR_G, MESSAGE_COLOR_B, 255});
 }
 
 void Chip8::panic(const std::string& message)

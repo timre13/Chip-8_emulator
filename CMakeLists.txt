@@ -23,4 +23,5 @@ add_executable(chip8emu
     fontset.h
     to_hex.h
     gfx.h
+    license.h
 )
