@@ -86,6 +86,10 @@ The function keys can be modified in the `config.h` file before compiling.
 ##### P
 Pauses the program. Press again to resume. Disables stepping mode if it is active.
 
+##### F1
+Toggles the help screen. The help screen shows the keybindings and some compilation info.
+![Help screen](./readme/help-screen.png)
+
 ##### F2
 Creates a screenshot of the game and saves it as a BMP image. The filename is the time in the C strftime() format `%y%m%d%H%M%S.bmp`.
 
