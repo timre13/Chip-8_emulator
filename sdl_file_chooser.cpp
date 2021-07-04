@@ -141,6 +141,7 @@ FileChooser::FileChooser(const std::string& directory, const std::string& extens
                         break;
 
                     case SDLK_DOWN:
+                    case SDLK_j:
                         chosenFileI += 1;
 
                         if (chosenFileI > static_cast<int>(fileList.size())-1)
@@ -148,6 +149,7 @@ FileChooser::FileChooser(const std::string& directory, const std::string& extens
                         break;
 
                     case SDLK_UP:
+                    case SDLK_k:
                         chosenFileI -= 1;
 
                         if (chosenFileI < 0)
