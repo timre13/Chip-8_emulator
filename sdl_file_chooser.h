@@ -29,12 +29,12 @@ private:
     void drawTitle(const std::string& title) const;
     void drawSelector() const;
 
-    void deinit();
-
 public:
     FileChooser(const std::string& directory, const std::string& extension="*");
 
     std::string get() const;
+
+    ~FileChooser();
 };
 
 #endif // SDL_FILE_CHOOSER

@@ -158,7 +158,6 @@ FileChooser::FileChooser(const std::string& directory, const std::string& extens
 
                     case SDLK_RETURN:
                         isRunning = false;
-                        deinit();
                         return;
                 }
                 break;
@@ -193,8 +192,6 @@ FileChooser::FileChooser(const std::string& directory, const std::string& extens
         
         SDL_Delay(20);
     }
-    
-    deinit();
 }
 
 std::string FileChooser::get() const
@@ -207,7 +204,7 @@ std::string FileChooser::get() const
     return fileList.at(chosenFileI);
 }
 
-void FileChooser::deinit()
+FileChooser::~FileChooser()
 {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
