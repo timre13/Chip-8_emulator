@@ -136,6 +136,7 @@ FileChooser::FileChooser(const std::string& directory, const std::string& extens
                 switch (event.key.keysym.sym)
                 {
                     case SDLK_ESCAPE:
+                    case SDLK_q:
                         chosenFileI = -1;
                         isRunning = false;
                         break;
