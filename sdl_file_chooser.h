@@ -14,23 +14,20 @@
 class FileChooser final
 {
 private:
-    std::vector<std::string> fileList;
+    std::vector<std::string> m_fileList;
 
-    SDL_Window* window{};
-    SDL_Renderer* renderer{};
-    TTF_Font* font{};
+    SDL_Window* m_window{};
+    SDL_Renderer* m_renderer{};
+    TTF_Font* m_font{};
     
-    int chosenFileI{};
-
-
-    int getFileList(const std::string& directory, const std::vector<std::string>& extensions);
+    int m_chosenFileI{};
 
     void drawFileList() const;
     void drawTitle(const std::string& title) const;
     void drawSelector() const;
 
 public:
-    FileChooser(const std::string& directory, const std::vector<std::string>& extensions={"*"});
+    FileChooser(const std::vector<std::string>& directories, const std::vector<std::string>& extensions={"*"});
 
     std::string get() const;
 

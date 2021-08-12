@@ -22,9 +22,9 @@ int main(int argc, char** argv)
     }
     else
     {
-        FileChooser fileChooser{"./roms", {"ch8", "asm"}};
+        FileChooser fileChooser{{"./roms", "../submodules/chip8asm/tests"}, {"ch8", "asm"}};
         romFilename = fileChooser.get();
-        // If the user canceled the file selection, quit.
+        // If the user canceled the file selection or the file list is empty, quit.
         if (romFilename.size() == 0)
             return 0;
     }
