@@ -12,8 +12,8 @@
 #include <bitset>
 
 #include "config.h"
-#include "Logger.h"
 #include "to_hex.h"
+#include "submodules/chip8asm/src/Logger.h"
 
 #define TITLE "CHIP-8 Emulator"
 

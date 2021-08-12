@@ -1,5 +1,5 @@
 #include "sdl_file_chooser.h"
-#include "Logger.h"
+#include "submodules/chip8asm/src/Logger.h"
 #include <cmath>
 #include <stdint.h>
 #include <string>
@@ -51,6 +51,11 @@ static void getFileList(
             if (std::find(exts.begin(), exts.end(), fileExt) == exts.end())
                 continue;
         }
+
+        // Don't write if the list already contains the value (filter duplicates)
+        if (std::find(output->begin(), output->end(), path) != output->end())
+            continue;
+
         output->push_back(path);
     }
     

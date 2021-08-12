@@ -10,6 +10,7 @@
 #include <cstring>
 #include <string>
 #include <climits>
+#include <filesystem>
 
 #include "Chip-8.h"
 #include "fontset.h"
@@ -17,6 +18,13 @@
 #include "gfx.h"
 #include "config.h"
 #include "license.h"
+#include "sdl_file_chooser.h"
+
+#include "submodules/chip8asm/src/InputFile.h"
+#include "submodules/chip8asm/src/parser.h"
+#include "submodules/chip8asm/src/binary_generator.h"
+
+namespace std_fs = std::filesystem;
 
 #define _STR(x) #x
 #define STR(x) _STR(x)
@@ -122,6 +130,59 @@ static void renderText(
     }
 }
 
+static ByteList assembleFile(const std::string& filePath)
+{
+    std::string fileContent;
+    {
+        InputFile file;
+        file.open(filePath);
+        fileContent = file.getContent();
+    }
+
+    // Call the preprocessor
+    fileContent = Parser::preprocessFile(fileContent, filePath);
+
+    Parser::tokenList_t tokenList;
+    Parser::labelMap_t labelMap;
+    Parser::parseTokens(fileContent, filePath, &tokenList, &labelMap);
+    Logger::dbg << "Found " << tokenList.size() << " tokens and " << labelMap.size() << " labels" << Logger::End;
+
+    ByteList output = generateBinary(tokenList, labelMap);
+    Logger::log << "Assembled to " << output.size() << " bytes" << Logger::End;
+
+    return output;
+}
+
+static void loadRom(const std::string& romFilename, int* romSize, uint8_t* memory, SDL_Window* window)
+{
+    Logger::log << "Opening file: " << romFilename << Logger::End;
+    FILE *romFile = fopen(romFilename.c_str(), "rb");
+    if (!romFile)
+    {
+        Logger::err << "Unable to open file: " << romFilename << Logger::End;
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CHIP-8 Emulator", (std::string("Unable to open ROM: ")+romFilename).c_str(), window);
+
+        std::exit(2);
+    }
+
+    fseek(romFile, 0, SEEK_END);
+    *romSize = ftell(romFile);
+    fseek(romFile, 0, SEEK_SET);
+    Logger::log << "File size: " << std::dec << *romSize << " / 0x" << std::hex << *romSize << " bytes" << Logger::End;
+
+    fread(memory + 512, 8, *romSize, romFile);
+    auto copied = ftell(romFile);
+    Logger::log << "Copied: " << std::dec << copied << std::hex << " bytes" << Logger::End;
+    if (copied != *romSize)
+    {
+        Logger::err << "Unable to copy to buffer" << Logger::End;
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to copy file content to memory", window);
+
+        std::exit(2);
+    }
+
+    fclose(romFile);
+}
 
 Chip8::Chip8(const std::string& romFilename)
     : m_sp{}
@@ -142,34 +203,25 @@ Chip8::Chip8(const std::string& romFilename)
 
 void Chip8::loadFile(const std::string& romFilename)
 {
-    Logger::log << "Emulated memory size: " << sizeof(m_memory) / sizeof(m_memory[0]) << Logger::End;
-    
-    Logger::log << "Opening file: " << romFilename << Logger::End;
-    FILE *romFile = fopen(romFilename.c_str(), "rb");
-    if (!romFile)
+    if (strToLower(std_fs::path{romFilename}.extension().string()).compare(".asm") == 0) // Assembly file, assemble it first
     {
-        Logger::err << "Unable to open file: " << romFilename << Logger::End;
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "CHIP-8 Emulator", (std::string("Unable to open ROM: ")+romFilename).c_str(), m_window);
-
-        std::exit(2);
+        Logger::log << "Assembly file, assembling it" << Logger::End;
+        auto data = assembleFile(romFilename);
+        //memcpy(m_memory, data.data(), std::min(data.size(), (size_t)0x1000));
+        size_t copiedBytes{};
+        for (; copiedBytes < std::min(data.size(), (size_t)0x1000); ++copiedBytes)
+        {
+            m_memory[512+copiedBytes] = data[copiedBytes];
+        }
+        Logger::log << "Copied " << copiedBytes << " bytes to memory" << Logger::End;
     }
-    
-    fseek(romFile, 0, SEEK_END);
-    m_romSize = ftell(romFile);
-    fseek(romFile, 0, SEEK_SET);
-    Logger::log << "File size: " << std::dec << m_romSize << " / 0x" << std::hex << m_romSize << " bytes" << Logger::End;
-
-    fread(m_memory + 512, 8, m_romSize, romFile);
-    auto copied = ftell(romFile);
-    Logger::log << "Copied: " << std::dec << copied << std::hex << " bytes" << Logger::End;
-    if (copied != m_romSize)
+    else // Probably ROM, just simply copy
     {
-        Logger::err << "Unable to copy to buffer" << Logger::End;
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TITLE, "Unable to copy file content to memory", m_window);
-
-        std::exit(2);
+        Logger::log << "ROM file, copying it" << Logger::End;
+        loadRom(romFilename, &m_romSize, m_memory, m_window);
     }
 
+    // Dump the memory
     Logger::log << '\n' << "--- START OF MEMORY ---" << Logger::End;
     for (int i{}; i < 0xfff + 1; ++i)
     {
@@ -182,8 +234,6 @@ void Chip8::loadFile(const std::string& romFilename)
             Logger::log << '\n' << "--- END OF MEMORY ---" << '\n';
     }
     Logger::log << Logger::End;
-    
-    fclose(romFile);
 }
 
 void Chip8::loadFontSet()

@@ -6,14 +6,21 @@
 
 #include "config.h"
 #include "Chip-8.h"
-#include "Logger.h"
 #include "sdl_file_chooser.h"
 #include "sound.h"
 #include "license.h"
 
+#if !__has_include("submodules/chip8asm/src/version.h")
+#error "Chip8asm submodule is missing. Run `git submodule init`."
+#endif
+
+#include "submodules/chip8asm/src/Logger.h"
+
 int main(int argc, char** argv)
 {
     std::cout << LICENSE_STR << std::endl;
+
+    Logger::setLoggerVerbosity(Logger::LoggerVerbosity::Verbose);
 
     std::string romFilename{};
     if (argc > 1)
@@ -22,7 +29,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        FileChooser fileChooser{{"./roms", "../submodules/chip8asm/tests"}, {"ch8", "asm"}};
+        FileChooser fileChooser{{"./roms", "../submodules/chip8asm/tests", "."}, {"ch8", "asm"}};
         romFilename = fileChooser.get();
         // If the user canceled the file selection or the file list is empty, quit.
         if (romFilename.size() == 0)
