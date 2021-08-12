@@ -46,7 +46,7 @@ static void getFileList(
 
         if (shouldFilter)
         {
-            std::string fileExt = std_fs::path(path).extension().string();
+            std::string fileExt = strToLower(std_fs::path(path).extension().string());
             if (!fileExt.empty()) fileExt = fileExt.substr(1);
             if (std::find(exts.begin(), exts.end(), fileExt) == exts.end())
                 continue;

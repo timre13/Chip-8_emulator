@@ -11,6 +11,14 @@
 
 #define FILECHOOSER_TITLE "Choose a file"
 
+inline std::string strToLower(const std::string& str)
+{
+    auto output = str;
+    for (auto& c : output)
+        c = std::tolower(c);
+    return output;
+}
+
 class FileChooser final
 {
 private:
