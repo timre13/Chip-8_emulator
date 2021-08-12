@@ -4,7 +4,13 @@ CHIP-8 emulator with debug view. Written in C++ using SDL2.
 ![PONG](./readme/PONG.png)
 
 ## Compiling and running
-Requires SDL2, SDL2_ttf and ncurses
+
+Dependencies:
+* SDL2
+* SDL2_ttf
+* ncurses
+
+After cloning the repository, execute `git submodule init` to fetch the [assembler's source code](https://github.com/timre13/chip8asm).
 
 ### Linux
 On a Debian-based system they can be installed by running the command:
