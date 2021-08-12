@@ -23,14 +23,14 @@ private:
     int chosenFileI{};
 
 
-    int getFileList(const std::string& directory, const std::string& extension);
+    int getFileList(const std::string& directory, const std::vector<std::string>& extensions);
 
     void drawFileList() const;
     void drawTitle(const std::string& title) const;
     void drawSelector() const;
 
 public:
-    FileChooser(const std::string& directory, const std::string& extension="*");
+    FileChooser(const std::string& directory, const std::vector<std::string>& extensions={"*"});
 
     std::string get() const;
 

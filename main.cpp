@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        FileChooser fileChooser{"./roms", "ch8"};
+        FileChooser fileChooser{"./roms", {"ch8", "asm"}};
         romFilename = fileChooser.get();
         // If the user canceled the file selection, quit.
         if (romFilename.size() == 0)

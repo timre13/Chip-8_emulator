@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-int FileChooser::getFileList(const std::string& directory, const std::string& extension)
+int FileChooser::getFileList(const std::string& directory, const std::vector<std::string>& extensions)
 {
     std::filesystem::recursive_directory_iterator files{};
     try
@@ -18,20 +18,25 @@ int FileChooser::getFileList(const std::string& directory, const std::string& ex
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "", (std::string("Failed to list directory: ") + e.what()).c_str(), window);
         return 1;
     }
-    
-    bool shouldFilter{extension.compare("*") != 0};
 
-    for (auto& file : files)
+    const bool shouldFilter = std::find(extensions.begin(), extensions.end(), "*") == extensions.end();
+
+    for (const auto& file : files)
     {
-        std::string fileExtension{"*"};
-        if (shouldFilter)
+        if (!std::filesystem::is_regular_file(file))
         {
-            size_t dotPos{std::string(file.path()).find_last_of('.')};
-            fileExtension = std::string(file.path()).substr(dotPos == std::string::npos ? std::string::npos : dotPos + 1);
+            continue;
         }
 
-        if (std::filesystem::is_regular_file(file) && (fileExtension.compare(extension) == 0))
-            fileList.push_back(file.path().c_str());
+        const std::string pathStr = std::string(file.path());
+        if (shouldFilter)
+        {
+            const size_t dotPos = pathStr.find_last_of('.');
+            const std::string fileExtension = (dotPos == std::string::npos || dotPos == 0) ? "" : pathStr.substr(dotPos + 1);
+            if (std::find(extensions.begin(), extensions.end(), fileExtension) == extensions.end())
+                continue;
+        }
+        fileList.push_back(pathStr);
     }
     
     std::sort(fileList.begin(), fileList.end());
@@ -87,7 +92,7 @@ void FileChooser::drawSelector() const
     SDL_RenderFillRect(renderer, &selectorRect);
 }
 
-FileChooser::FileChooser(const std::string& directory, const std::string& extension/*="*"*/)
+FileChooser::FileChooser(const std::string& directory, const std::vector<std::string>& extensions/*={"*"}*/)
 {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -115,7 +120,7 @@ FileChooser::FileChooser(const std::string& directory, const std::string& extens
 
     drawTitle("Loading...");
     SDL_RenderPresent(renderer);
-    if (getFileList(directory, extension))
+    if (getFileList(directory, extensions))
         return; // If failed to open directory, exit
 
     bool isRunning{true};
