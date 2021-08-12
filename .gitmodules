@@ -1,0 +1,3 @@
+[submodule "submodules/chip8asm"]
+	path = submodules/chip8asm
+	url = https://github.com/timre13/chip8asm.git
