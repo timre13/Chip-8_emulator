@@ -11,7 +11,7 @@ add_definitions(-DNOT_CLANGD)
 SET(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 include_directories(/usr/include/SDL2)
-link_libraries(SDL2 SDL2_ttf ncurses)
+link_libraries(SDL2 SDL2_ttf)
 
 add_executable(chip8emu
     main.cpp

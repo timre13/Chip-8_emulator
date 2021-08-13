@@ -86,4 +86,9 @@
  */
 #define MESSAGE_SHOW_TIME_S 3.0
 
+/*
+ * How long the beep sound should be. Specified in frames
+ */
+#define BEEP_DURATION 50 // frames
+
 #endif // CONFIG_H

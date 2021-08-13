@@ -14,7 +14,6 @@
 
 #include "Chip-8.h"
 #include "fontset.h"
-#include "sound.h"
 #include "gfx.h"
 #include "config.h"
 #include "license.h"
@@ -254,7 +253,7 @@ void Chip8::initVideo()
 {
     Logger::log << "Initializing SDL" << Logger::End;
     
-    if (SDL_Init(SDL_INIT_VIDEO))
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
     {
         Logger::err << "Unable to initialize SDL. " << SDL_GetError() << Logger::End;
         std::exit(2);
@@ -1282,10 +1281,16 @@ void Chip8::emulateCycle()
         if (m_soundTimer > 0)
         {
             --m_soundTimer;
-            Sound::makeBeepSound();
+            m_beeper.startBeeping();
+            m_remainingBeepFrames = BEEP_DURATION;
         }
 
         // reset the timer
         m_timerDecrementCountdown = 16.67;
     }
+
+    if (m_remainingBeepFrames > 0)
+        --m_remainingBeepFrames;
+    else
+        m_beeper.stopBeeping();
 }

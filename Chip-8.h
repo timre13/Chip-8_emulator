@@ -13,6 +13,7 @@
 
 #include "config.h"
 #include "to_hex.h"
+#include "sound.h"
 #include "submodules/chip8asm/src/Logger.h"
 
 #define TITLE "CHIP-8 Emulator"
@@ -166,6 +167,9 @@ private:
     SDL_Texture* m_contentTexture{};
     // The texture of the debugger window
     SDL_Texture* m_debuggerTexture{};
+
+    Beeper m_beeper;
+    int m_remainingBeepFrames{};
 
     // Every character from code 21 to code 126 prerendered
     SDL_Texture* m_fontCache['~' - '!' + 1]{};

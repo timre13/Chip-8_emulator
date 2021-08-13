@@ -20,14 +20,13 @@ CHIP-8 emulator with debug view and integrated assembler. Written in C++ using S
 Dependencies:
 * SDL2
 * SDL2_ttf
-* ncurses
 
 After cloning the repository, execute `git submodule init` to fetch the [assembler's source code](https://github.com/timre13/chip8asm).
 
 ### Linux
 On a Debian-based system they can be installed by running the command:
 ~~~
-sudo apt install libsdl2-dev libsdl2-ttf-dev libncurses-dev
+sudo apt install libsdl2-dev libsdl2-ttf-dev
 ~~~
 Compiling:
 ~~~sh
