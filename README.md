@@ -1,9 +1,21 @@
 # CHIP-8_emulator
-CHIP-8 emulator with debug view. Written in C++ using SDL2.
+CHIP-8 emulator with debug view and integrated assembler. Written in C++ using SDL2.
+
+## Features:
+* Execute ROM files
+* Assemble and execute Assembly files
+* Increase/Decrease emulation speed
+* Pause/Unpause
+* Create screenshot
+* Reset
+* Single-step mode
+* Debug mode (shows the registers, opcode and stack)
+* Fullscreen mode
+* Memory, register and stack dump
 
 ![PONG](./readme/PONG.png)
 
-## Compiling and running
+## Building
 
 Dependencies:
 * SDL2
@@ -27,30 +39,34 @@ cp ../*.ttf . # Copy the font to the build directory
 cp -r ../roms . # Copy the ROMs to the build directory
 ~~~
 
+### Windows
+Install WSL2 and follow the Linux building instructions.
+> TODO: Test if they work on WSL2
+
 ## Usage
 
-### Select a CHIP-8 ROM
-When you start the emulator, the ROM selector opens. It shows the ROMs in the ./roms directory and in its subdirectories. You can copy your own ROMs here.
+### Select a game
+
+#### GUI method
+When you start the emulator, the ROM selector opens. It shows the ROMs (`.ch8`) and Assembly (`.asm`) files in the `./roms`, `../submodules/chip8asm/tests` and the current directories (recursively). You can copy games to these folders.
 
 ![ROM selector](./readme/rom-selector.png)
 
-When you selected the ROM using the arrow keys, press Enter. An another dialog will open.
+When you selected the ROM or assembly using the arrow keys, press Enter.
 
-You can cancel the selection by pressing the Escape key.
+You can cancel the selection by pressing the `Escape` key.
 
-### Select the emulation speed
-After you selected the file, the emulation speed asker dialog opens.
+#### Command line method
+You can also call the emulator with the ROM/Assembly file as parameter.
+Example:
+```command
+./chip8emu ./my_fav_game.ch8
+```
 
-![Emulation speed selector](./readme/speed-selector.png)
-
-Here you can enter the emulation speed. The default value is 500 instructions per second. This is multiplied by the entered value, so if you enter 1.5 it is 500 * 1.5 = 750 instructions.
-
-If you press enter without entering a number, the default value is used.
-
-You can cancel the operation by pressing the Escape key.
+You can write games using [Chip8asm](https://github.com/timre13/chip8asm)'s syntax. They are assembled after loading.
 
 ### Using the emulator
-After you select the ROM and enter the speed, the emulator window opens. There you can see the output of the ROM.
+After you select the ROM, the emulator window opens. There you can see the frame buffer.
 
 ![The main emulator window (currently executing Tetris)](./readme/tetris.png)
 
@@ -62,7 +78,7 @@ If the program is waiting for input, it is indicated as *waiting for keypress*
 If the user paused the program, there is *[PAUSED]* at the end of the title.
 
 ### The window content
-The window displays the output of the executed ROM. The programs can draw on a 64 px width and 32 px height buffer. The coordinates are scaled up so the output fills the window with fixed ratio.
+The window displays the output of the executed ROM. The programs can draw on a 64px by 32px buffer. The coordinates are scaled up (using hardware-accelerated texture scaling) so the output fills the window with fixed ratio.
 
 The content can flicker, this is due to how the CHIP-8 interpreter is designed.
 
