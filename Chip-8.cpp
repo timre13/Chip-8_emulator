@@ -127,23 +127,53 @@ static void renderText(
 
 static ByteList assembleFile(const std::string& filePath)
 {
+    auto showFatalMessage{
+        [](const char* msg){
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Assembler Error", msg, nullptr);
+            Logger::fatal << msg << Logger::End;
+        }
+    };
+
+    // ----- Read the input file -----
     std::string fileContent;
+    try
     {
         InputFile file;
         file.open(filePath);
         fileContent = file.getContent();
     }
+    catch (std::exception& e) { showFatalMessage(e.what()); }
 
-    // Call the preprocessor
-    fileContent = Parser::preprocessFile(fileContent, filePath);
+    // ----- Call the preprocessor -----
+    try
+    {
+        fileContent = Parser::preprocessFile(fileContent, filePath);
+    }
+    catch (std::exception& e) { showFatalMessage(e.what()); }
 
+    // ----- Parse the file -----
     Parser::tokenList_t tokenList;
     Parser::labelMap_t labelMap;
-    Parser::parseTokens(fileContent, filePath, &tokenList, &labelMap);
+    try
+    {
+        Parser::parseTokens(fileContent, filePath, &tokenList, &labelMap);
+    }
+    catch (std::exception& e) { showFatalMessage(e.what()); }
     Logger::dbg << "Found " << tokenList.size() << " tokens and " << labelMap.size() << " labels" << Logger::End;
 
-    ByteList output = generateBinary(tokenList, labelMap);
+    // ----- Generate the output -----
+    ByteList output;
+    try
+    {
+        output = generateBinary(tokenList, labelMap);
+    }
+    catch (std::exception& e) { showFatalMessage(e.what()); }
     Logger::log << "Assembled to " << output.size() << " bytes" << Logger::End;
+
+    if (output.empty())
+    {
+        showFatalMessage("The assembler produced no output");
+    }
 
     return output;
 }
