@@ -72,7 +72,7 @@ class Framebuffer final
 {
 public:
     int m_frameBuffer[64 * 32]{};
-    
+
     Framebuffer()
     {
     }
@@ -81,9 +81,9 @@ public:
     {
         //assert(index >= 0);
         //assert(index < 32);
-        
+
         bool isOutOfBounds{};
-        
+
         if (index < 0)
         {
             isOutOfBounds = true;
@@ -94,13 +94,13 @@ public:
             isOutOfBounds = true;
             Logger::warn << "Frame buffer index out of bounds" << Logger::End;
         }
-        
+
         if (isOutOfBounds)
             return m_frameBuffer[0];
-        
+
         return m_frameBuffer[index];
     }
-    
+
     void print()
     {
         Logger::log << "--- frame buffer ---\n";
@@ -203,7 +203,7 @@ private:
     void loadFile(const std::string& romFilename);
     void loadFontSet();
     void initVideo();
-    
+
     void fetchOpcode();
 
     /*
@@ -216,7 +216,7 @@ public:
     Chip8(const std::string& romFilename);
 
     void reset();
-    
+
     void emulateCycle();
     void renderFrameBuffer();
 
@@ -226,17 +226,17 @@ public:
         m_emulSpeedPerc = value;
         updateWindowTitle();
     }
-    
+
     void copyTexturesToRenderer();
     inline void updateRenderer() { SDL_RenderPresent(m_renderer); }
-    
+
     void updateWindowTitle();
 
     inline void togglePause() { m_isPaused = !m_isPaused; updateWindowTitle(); }
     inline void pause() { m_isPaused = true; updateWindowTitle(); }
     inline void unpause() { m_isPaused = false; updateWindowTitle(); }
     inline bool isPaused() const { return m_isPaused; }
-    
+
     void whenWindowResized(int width, int height);
 
     void toggleFullscreen();

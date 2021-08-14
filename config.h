@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <SDL2/SDL.h>
+#include <stdint.h>
 
 //------------------------------- Compatibility --------------------------------
 

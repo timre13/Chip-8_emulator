@@ -1,6 +1,8 @@
 #ifndef FONTSET_H
 #define FONTSET_H
 
+#include <stdint.h>
+
 // This array stores all the fonts.
 // There are 16 characters, from 0 to F.
 // Each character is 5 bytes long.

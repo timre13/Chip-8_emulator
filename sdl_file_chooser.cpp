@@ -58,21 +58,21 @@ static void getFileList(
 
         output->push_back(path);
     }
-    
+
     std::sort(output->begin(), output->end());
 }
 
 void FileChooser::drawTitle(const std::string& title) const
 {
     SDL_Surface *textSurface = TTF_RenderText_Solid(m_font, (m_fileList.size() ? title : "Empty file list").c_str(), {255, 255, 255, 255});
-    
+
     SDL_Rect sourceRect{0, 0, textSurface->w, textSurface->h};
     SDL_Rect targetRect{10, 10, textSurface->w / 3, textSurface->h / 3};
-    
+
     SDL_Texture* textTexture{SDL_CreateTextureFromSurface(m_renderer, textSurface)};
-    
+
     SDL_RenderCopy(m_renderer, textTexture, &sourceRect, &targetRect);
-    
+
     SDL_DestroyTexture(textTexture);
     SDL_FreeSurface(textSurface);
 }
@@ -82,21 +82,21 @@ void FileChooser::drawFileList() const
     for (int i{}; i < static_cast<int>(m_fileList.size()); ++i)
     {
         int y{500 - m_chosenFileI * 30 + i * 30};
-        
+
         if (y  < 1000 && y > 0)
         {
             SDL_Surface *textSurface = TTF_RenderText_Blended(
                 m_font,
                 m_fileList[i].c_str(),
                 {255, 255, 255, static_cast<uint8_t>(255 - abs(500 - y) / 2)});
-            
+
             SDL_Rect sourceRect{0, 0, textSurface->w, textSurface->h};
             SDL_Rect targetRect{0, y, textSurface->w / 5, textSurface->h / 5};
-            
+
             SDL_Texture* textTexture{SDL_CreateTextureFromSurface(m_renderer, textSurface)};
-            
+
             SDL_RenderCopy(m_renderer, textTexture, &sourceRect, &targetRect);
-            
+
             SDL_DestroyTexture(textTexture);
             SDL_FreeSurface(textSurface);
         }
@@ -114,21 +114,21 @@ FileChooser::FileChooser(const std::vector<std::string>& directories, const std:
 {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
-    
+
     m_window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 1000, SDL_WINDOW_ALLOW_HIGHDPI);
     if (!m_window)
     {
         Logger::err << "Unable to create window" << Logger::End;
         std::exit(2);
     }
-    
+
     m_renderer = SDL_CreateRenderer(m_window, -1, 0);
     if (!m_renderer)
     {
         Logger::err << "Unable to create renderer" << Logger::End;
         std::exit(2);
     }
-    
+
     m_font = TTF_OpenFont("./Anonymous_Pro.ttf", 100);
     if (!m_font)
     {
@@ -144,7 +144,7 @@ FileChooser::FileChooser(const std::vector<std::string>& directories, const std:
     while (isRunning)
     {
         SDL_Event event;
-        
+
         while (SDL_PollEvent(&event))
         {
             switch (event.type)
@@ -203,16 +203,16 @@ FileChooser::FileChooser(const std::vector<std::string>& directories, const std:
                 break;
             }
         }
-        
+
         SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
         SDL_RenderClear(m_renderer);
 
         drawSelector();
         drawTitle(FILECHOOSER_TITLE);
         drawFileList();
-        
+
         SDL_RenderPresent(m_renderer);
-        
+
         SDL_Delay(20);
     }
 }
@@ -232,7 +232,7 @@ FileChooser::~FileChooser()
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);
     TTF_CloseFont(m_font);
-    
+
     TTF_Quit();
     SDL_Quit();
 }

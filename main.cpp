@@ -1,8 +1,6 @@
 #include <string>
-#include <vector>
 #include <random>
 #include <filesystem>
-#include <algorithm>
 
 #include "config.h"
 #include "Chip-8.h"
@@ -35,18 +33,18 @@ int main(int argc, char** argv)
         if (romFilename.size() == 0)
             return 0;
     }
-    
+
     Logger::log << "Filename: " << romFilename << Logger::End;
 
     Chip8 chip8{romFilename};
     chip8.whenWindowResized(64 * 20, 32 * 20);
-    
+
     Logger::log << std::hex;
-    
+
     double emulationSpeed = 1.0;
     int frameDelay = 1000.0 / 500 / emulationSpeed;
     chip8.setSpeedPerc(100);
-    
+
     bool isRunning = true;
     bool wasPaused{};
     bool isSteppingMode{};
@@ -194,7 +192,7 @@ int main(int argc, char** argv)
         chip8.clearIsReadingKeyStateFlag();
 
         chip8.emulateCycle();
-        
+
         // Mark that we executed an instruction since the last step
         shouldStep = false;
 
@@ -203,7 +201,7 @@ int main(int argc, char** argv)
             chip8.renderFrameBuffer();
             renderUpdateCountdown = 16.67;
         }
-        
+
         chip8.renderDebugInfoIfInDebugMode();
         chip8.copyTexturesToRenderer();
         chip8.updateInfoMessage();

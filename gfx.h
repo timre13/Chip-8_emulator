@@ -1,9 +1,4 @@
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_pixels.h>
-#include <algorithm>
-#include <cstring>
-#include <iostream>
-#include <cassert>
 
 namespace Gfx
 {
