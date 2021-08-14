@@ -23,15 +23,17 @@ class FileChooser final
 {
 private:
     std::vector<std::string> m_fileList;
+    int m_chosenFileI{};
 
     SDL_Window* m_window{};
     SDL_Renderer* m_renderer{};
     TTF_Font* m_font{};
 
-    int m_chosenFileI{};
+    bool m_isLoading{true};
+    std::string m_title{FILECHOOSER_TITLE};
 
     void drawFileList() const;
-    void drawTitle(const std::string& title) const;
+    void drawTitle() const;
     void drawSelector() const;
 
 public:

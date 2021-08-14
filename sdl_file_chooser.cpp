@@ -62,9 +62,11 @@ static void getFileList(
     std::sort(output->begin(), output->end());
 }
 
-void FileChooser::drawTitle(const std::string& title) const
+void FileChooser::drawTitle() const
 {
-    SDL_Surface *textSurface = TTF_RenderText_Solid(m_font, (m_fileList.size() ? title : "Empty file list").c_str(), {255, 255, 255, 255});
+    SDL_Surface *textSurface = TTF_RenderText_Solid(m_font,
+            (m_isLoading ? "Loading..." : (m_fileList.empty() ? "Empty file list" : m_title)).c_str(),
+            {255, 255, 255, 255});
 
     SDL_Rect sourceRect{0, 0, textSurface->w, textSurface->h};
     SDL_Rect targetRect{10, 10, textSurface->w / 3, textSurface->h / 3};
@@ -136,9 +138,10 @@ FileChooser::FileChooser(const std::vector<std::string>& directories, const std:
         std::exit(2);
     }
 
-    drawTitle("Loading...");
+    drawTitle();
     SDL_RenderPresent(m_renderer);
     getFileList(directories, extensions, &m_fileList);
+    m_isLoading = false;
 
     bool isRunning{true};
     while (isRunning)
@@ -208,7 +211,7 @@ FileChooser::FileChooser(const std::vector<std::string>& directories, const std:
         SDL_RenderClear(m_renderer);
 
         drawSelector();
-        drawTitle(FILECHOOSER_TITLE);
+        drawTitle();
         drawFileList();
 
         SDL_RenderPresent(m_renderer);
