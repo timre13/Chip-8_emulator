@@ -34,8 +34,6 @@ mdir build # Create a directory for the build files
 cd build # Step into the directory
 cmake .. # Generate build files
 make # Build
-cp ../*.ttf . # Copy the font to the build directory
-cp -r ../roms . # Copy the ROMs to the build directory
 ~~~
 
 ### Windows

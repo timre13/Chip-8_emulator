@@ -30,3 +30,17 @@ add_executable(chip8emu
     submodules/chip8asm/src/binary_generator.cpp
     submodules/chip8asm/src/Logger.cpp
 )
+
+# Copy font to build directory
+ADD_CUSTOM_TARGET(
+    copy_font
+    COMMAND cmake -E copy ${CMAKE_SOURCE_DIR}/*.ttf ${CMAKE_BINARY_DIR}
+)
+ADD_DEPENDENCIES(chip8emu copy_font)
+
+# Copy ROMs to build directory
+ADD_CUSTOM_TARGET(
+    copy_roms
+    COMMAND cmake -E copy_directory ${CMAKE_SOURCE_DIR}/roms ${CMAKE_BINARY_DIR}/roms
+)
+ADD_DEPENDENCIES(chip8emu copy_roms)
