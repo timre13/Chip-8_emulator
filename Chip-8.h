@@ -133,6 +133,8 @@ public:
         DecrementSpeed,
         IncrementSpeed,
         DumpState,
+        ToggleCompatShiftYRegInsteadOfX,
+        ToggleCompatIncIAfterRegFillLoad,
     };
 
 private:
@@ -204,6 +206,27 @@ private:
 
     bool m_shouldShowKeyboardHelp{};
 
+    /*
+     * The `8xy6` opcode is right-shift, the `8xyE` is left-shift.
+     * Register 0xF is set to the shifted-out bit of register X.
+     *
+     * If this is true,
+     *      register X is set to register Y shifted,
+     * if false,
+     *      register X is set to register X shifted.
+     *
+     * The old implementations used the Y register.
+     */
+    bool m_compat_shiftYRegInsteadOfX = true;
+
+    /*
+     * The `Fx55` and `Fx66` opcodes loop through the registers and write them to / read from the memory.
+     * This variable marks if the index register needs to be incremented while doing the operations.
+     * In the original implementation this does happen.
+     */
+    bool m_compat_incIAfterRegFillLoad = true;
+
+
     void loadFile(const std::string& romFilename);
     void loadFontSet();
     void initVideo();
@@ -246,6 +269,8 @@ public:
     void toggleFullscreen();
     void toggleDebugMode();
     inline void toggleCursor() { SDL_ShowCursor(!SDL_ShowCursor(-1)); }
+    void toggleCompatShiftYRegInsteadOfX();
+    void toggleCompatIncIAfterRegFillLoad();
 
     void renderDebugInfoIfInDebugMode();
 

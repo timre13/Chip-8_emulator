@@ -136,6 +136,16 @@ int main(int argc, char** argv)
                         case SHORTCUT_KEYCODE_TOGGLE_HELP:
                             chip8.toggleKeyboardHelp();
                             break;
+
+                        case SHORTCUT_KEYCODE_TOGGLE_COMPAT_SHIFTYREG:
+                            chip8.toggleCompatShiftYRegInsteadOfX();
+                            chip8.setInfoMessage(Chip8::InfoMessageValue::ToggleCompatShiftYRegInsteadOfX);
+                            break;
+
+                        case SHORTCUT_KEYCODE_TOGGLE_COMPAT_INCI:
+                            chip8.toggleCompatIncIAfterRegFillLoad();
+                            chip8.setInfoMessage(Chip8::InfoMessageValue::ToggleCompatIncIAfterRegFillLoad);
+                            break;
                     }
                     break;
 

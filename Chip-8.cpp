@@ -520,9 +520,14 @@ void Chip8::updateInfoMessage()
     case InfoMessageValue::DumpState:
         messageStr = "Dumped state to terminal.";
         break;
-    default:
-        assert(false);
-        return;
+
+    case InfoMessageValue::ToggleCompatShiftYRegInsteadOfX:
+        messageStr = "Toggled shift Y register instead of X to "+std::string(m_compat_shiftYRegInsteadOfX ? "TRUE" : "FALSE");
+        break;
+
+    case InfoMessageValue::ToggleCompatIncIAfterRegFillLoad:
+        messageStr = "Toggled increment I after full register fill/load to "+std::string(m_compat_incIAfterRegFillLoad ? "TRUE" : "FALSE");
+        break;
     }
 
     {
@@ -542,18 +547,21 @@ void Chip8::updateOverlay()
 
     std::string messageStr =
         std::string("------- Keybindings -------")
-        + "\nPause:           " +SDL_GetKeyName(SHORTCUT_KEYCODE_PAUSE)
-        + "\nFullscreen:      " + SDL_GetKeyName(SHORTCUT_KEYCODE_FULLSCREEN)
-        + "\nStepping mode:   " + SDL_GetKeyName(SHORTCUT_KEYCODE_STEPPING_MODE)
-        + "\nStep:            " + SDL_GetKeyName(SHORTCUT_KEYCODE_STEP_INST)
-        + "\nToggle cursor:   " + SDL_GetKeyName(SHORTCUT_KEYCODE_TOGGLE_CURSOR)
-        + "\nDebug mode:      " + SDL_GetKeyName(SHORTCUT_KEYCODE_DEBUG_MODE)
-        + "\nQuit:            " + SDL_GetKeyName(SHORTCUT_KEYCODE_QUIT)
-        + "\nDump state:      " + SDL_GetKeyName(SHORTCUT_KEYCODE_DUMP_STATE)
-        + "\nIncrement speed: " + SDL_GetKeyName(SHORTCUT_KEYCODE_INC_SPEED)
-        + "\nDecrement speed: " + SDL_GetKeyName(SHORTCUT_KEYCODE_DEC_SPEED)
-        + "\nReset state:     " + SDL_GetKeyName(SHORTCUT_KEYCODE_RESET)
-        + "\nTake screenshot: " + SDL_GetKeyName(SHORTCUT_KEYCODE_SCREENSHOT);
+        + "\nPause:                         " + SDL_GetKeyName(SHORTCUT_KEYCODE_PAUSE)
+        + "\nFullscreen:                    " + SDL_GetKeyName(SHORTCUT_KEYCODE_FULLSCREEN)
+        + "\nStepping mode:                 " + SDL_GetKeyName(SHORTCUT_KEYCODE_STEPPING_MODE)
+        + "\nStep:                          " + SDL_GetKeyName(SHORTCUT_KEYCODE_STEP_INST)
+        + "\nToggle cursor:                 " + SDL_GetKeyName(SHORTCUT_KEYCODE_TOGGLE_CURSOR)
+        + "\nDebug mode:                    " + SDL_GetKeyName(SHORTCUT_KEYCODE_DEBUG_MODE)
+        + "\nQuit:                          " + SDL_GetKeyName(SHORTCUT_KEYCODE_QUIT)
+        + "\nDump state:                    " + SDL_GetKeyName(SHORTCUT_KEYCODE_DUMP_STATE)
+        + "\nIncrement speed:               " + SDL_GetKeyName(SHORTCUT_KEYCODE_INC_SPEED)
+        + "\nDecrement speed:               " + SDL_GetKeyName(SHORTCUT_KEYCODE_DEC_SPEED)
+        + "\nReset state:                   " + SDL_GetKeyName(SHORTCUT_KEYCODE_RESET)
+        + "\nTake screenshot:               " + SDL_GetKeyName(SHORTCUT_KEYCODE_SCREENSHOT)
+        + "\nCompat: Shift Y Register\n    instead X:                  " + SDL_GetKeyName(SHORTCUT_KEYCODE_TOGGLE_COMPAT_SHIFTYREG)
+        + "\nCompat: Increment I after\n    full register fill/load:    " + SDL_GetKeyName(SHORTCUT_KEYCODE_TOGGLE_COMPAT_INCI)
+        ;
 
     int cursorRow{2};
     int cursorCol{};
@@ -741,6 +749,16 @@ void Chip8::toggleDebugMode()
     // Call the window resize function to calculate the new
     // scale, so the debug info can fit in the window
     whenWindowResized(w, h);
+}
+
+void Chip8::toggleCompatShiftYRegInsteadOfX()
+{
+    m_compat_shiftYRegInsteadOfX = !m_compat_shiftYRegInsteadOfX;
+}
+
+void Chip8::toggleCompatIncIAfterRegFillLoad()
+{
+    m_compat_incIAfterRegFillLoad = !m_compat_incIAfterRegFillLoad;
 }
 
 std::string Chip8::dumpStateToStr(bool dumpAll/*=true*/)
@@ -1031,11 +1049,14 @@ void Chip8::emulateCycle()
                     // Mark whether overflow occurs.
                     m_registers.set(0xf, m_registers.get((m_opcode & 0x0f00) >> 8) & 1);
 
-#if SHIFT_Y_REG_INSTEAD_OF_X
-                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4) >> 1);
-#else
-                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) >> 1);
-#endif
+                    if (m_compat_shiftYRegInsteadOfX)
+                    {
+                        m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4) >> 1);
+                    }
+                    else
+                    {
+                        m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) >> 1);
+                    }
                     break;
 
                 case 7: // SUBN Vx, Vy
@@ -1050,11 +1071,14 @@ void Chip8::emulateCycle()
                     // Mark whether overflow occurs.
                     m_registers.set(0xf, (m_registers.get((m_opcode & 0x0f00) >> 8) >> 7));
 
-#if SHIFT_Y_REG_INSTEAD_OF_X
-                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4) << 1);
-#else
-                    m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) << 1);
-#endif
+                    if (m_compat_shiftYRegInsteadOfX)
+                    {
+                        m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x00f0) >> 4) << 1);
+                    }
+                    else
+                    {
+                        m_registers.set((m_opcode & 0x0f00) >> 8, m_registers.get((m_opcode & 0x0f00) >> 8) << 1);
+                    }
                     break;
 
                 default:
@@ -1269,9 +1293,8 @@ void Chip8::emulateCycle()
                     for (uint8_t i{}; i <= x; ++i)
                         m_memory[m_indexReg + i] = m_registers.get(i);
 
-#if INC_I_AFTER_MEM_OP
-                    m_indexReg += (x + 1);
-#endif
+                    if (m_compat_incIAfterRegFillLoad)
+                        m_indexReg += (x + 1);
                     break;
                 }
 
@@ -1283,9 +1306,8 @@ void Chip8::emulateCycle()
                     for (uint8_t i{}; i <= x; ++i)
                         m_registers.set(i, m_memory[m_indexReg + i]);
 
-#if INC_I_AFTER_MEM_OP
-                    m_indexReg += (x + 1);
-#endif
+                    if (m_compat_incIAfterRegFillLoad)
+                        m_indexReg += (x + 1);
                     break;
                 }
 
