@@ -1,3 +1,9 @@
 Debug/
 Release/
-build
+build/
+.cache/
+.ccls-cache/
+.runcfg
+Session.vim
+roms/c8_test.c8
+roms/test_opcode.ch8

@@ -77,28 +77,32 @@ public:
     {
     }
 
-    int& operator[](int index)
+    void set(int x, int y, int val)
     {
-        //assert(index >= 0);
-        //assert(index < 32);
+        assert(x >= 0 && x < 64);
+        assert(y >= 0 && y < 32);
+        m_frameBuffer[y*64+x] = val;
+    }
 
-        bool isOutOfBounds{};
+    int get(int x, int y) const
+    {
+        assert(x >= 0 && x < 64);
+        assert(y >= 0 && y < 32);
+        return m_frameBuffer[y*64+x];
+    }
 
-        if (index < 0)
-        {
-            isOutOfBounds = true;
-            Logger::warn << "Frame buffer index less than 0" << Logger::End;
-        }
-        if (index >= 64 * 32)
-        {
-            isOutOfBounds = true;
-            Logger::warn << "Frame buffer index out of bounds" << Logger::End;
-        }
-
-        if (isOutOfBounds)
-            return m_frameBuffer[0];
-
+    int get(int index) const
+    {
+        assert(index >= 0 && index < 64*32);
         return m_frameBuffer[index];
+    }
+
+    void clear()
+    {
+        for (int i{}; i < 64*32; ++i)
+        {
+            m_frameBuffer[i] = 0;
+        }
     }
 
     void print()

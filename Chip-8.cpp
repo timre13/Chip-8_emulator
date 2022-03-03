@@ -448,8 +448,7 @@ void Chip8::renderFrameBuffer()
     {
         for (int y{}; y < 32; ++y)
         {
-            const int currentPixelI{y * 64 + x};
-            if (m_frameBuffer[currentPixelI])
+            if (m_frameBuffer.get(x, y))
                 Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{FG_COLOR_R, FG_COLOR_G, FG_COLOR_B, 255});
             else
                 Gfx::drawPoint(pixelData, pitch, x, y, SDL_Color{BG_COLOR_R, BG_COLOR_G, BG_COLOR_B, 255});
@@ -762,7 +761,7 @@ std::string Chip8::dumpStateToStr(bool dumpAll/*=true*/)
         output << "\nFramebuffer:\n";
         for (int i{}; i < 64 * 32; ++i)
         {
-            output << +m_frameBuffer[i] << ' ';
+            output << +m_frameBuffer.get(i) << ' ';
             if (i % 64 == 63)
                 output << '\n';
         }
@@ -895,9 +894,7 @@ void Chip8::reset()
     m_registers.clearReadWrittenFlags();
 
     std::memset(m_memory, 0, 0x1000);
-
-    for (int i{}; i < 64 * 32; ++i)
-        m_frameBuffer[i] = 0;
+    m_frameBuffer.clear();
 
     loadFontSet();
     loadFile(m_romFilename);
@@ -933,8 +930,7 @@ void Chip8::emulateCycle()
 
                 case 0x00e0: // CLS
                     logOpcode("CLS");
-                    for (int i{}; i < 64 * 32; ++i)
-                        m_frameBuffer[i] = 0;
+                    m_frameBuffer.clear();
                     m_renderFlag = true;
                     break;
 
@@ -1092,9 +1088,11 @@ void Chip8::emulateCycle()
         {
             logOpcode("DRW Vx, Vy, nibble");
 
-            int x{m_registers.get((m_opcode & 0x0f00) >> 8)};
-            int y{m_registers.get((m_opcode & 0x00f0) >> 4)};
-            int height{m_opcode & 0x000f};
+            // Sprite coordinates are wrapped
+            const int spritex = (m_registers.get((m_opcode & 0x0f00) >> 8)) % 64;
+            const int spritey = (m_registers.get((m_opcode & 0x00f0) >> 4)) % 32;
+
+            const int height = m_opcode & 0x000f;
 
             if (m_indexReg + height >= 0xfff)
                 panic("Invalid sprite address/height");
@@ -1103,20 +1101,21 @@ void Chip8::emulateCycle()
 
             for (int cy{}; cy < height; ++cy)
             {
-                uint8_t line{m_memory[m_indexReg + cy]};
+                const uint8_t line = m_memory[m_indexReg + cy];
 
                 for (int cx{}; cx < 8; ++cx)
                 {
-                    uint8_t pixel = line & (0x80 >> cx);
+                    const int x = (spritex+cx);
+                    const int y = (spritey+cy) % 32;
+                    const uint8_t pixel = line & (0x80 >> cx);
 
-                    if (pixel)
+                    // Note: Sprite pixels out-of-bounds are clipped
+                    if (x >= 0 && x < 64 && y >= 0 && y < 32 && pixel)
                     {
-                        int index{(x + cx) + (y + cy) * 64};
-
-                        if (m_frameBuffer[index])
+                        if (m_frameBuffer.get(x, y))
                             m_registers.set(0xf, 1);
 
-                        m_frameBuffer[index] ^= 1;
+                        m_frameBuffer.set(x, y, m_frameBuffer.get(x, y) ^ 1);
                     }
                 }
             }
