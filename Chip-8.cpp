@@ -223,11 +223,11 @@ Chip8::Chip8(const std::string& romFilename)
 
     Logger::log << '\n' << "----- loading file -----" << Logger::End;
     Chip8::loadFile(romFilename);
-    m_romFilename = romFilename;
 }
 
 void Chip8::loadFile(const std::string& romFilename)
 {
+    m_romFilename = romFilename;
     if (strToLower(std_fs::path{romFilename}.extension().string()).compare(".asm") == 0) // Assembly file, assemble it first
     {
         Logger::log << "Assembly file, assembling it" << Logger::End;
@@ -890,7 +890,7 @@ void Chip8::updateWindowTitle()
         SDL_SetWindowTitle(m_window, (TITLE " - Speed: " + std::to_string(m_emulSpeedPerc) + "%").c_str());
 }
 
-void Chip8::reset()
+void Chip8::reset(bool reloadFile/*=true*/)
 {
     Logger::log << "RESET!" << Logger::End;
 
@@ -915,7 +915,8 @@ void Chip8::reset()
     m_frameBuffer.clear();
 
     loadFontSet();
-    loadFile(m_romFilename);
+    if (reloadFile)
+        loadFile(m_romFilename);
 
     renderDebugInfoIfInDebugMode();
     renderFrameBuffer();

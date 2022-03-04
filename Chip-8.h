@@ -227,7 +227,6 @@ private:
     bool m_compat_incIAfterRegFillLoad = true;
 
 
-    void loadFile(const std::string& romFilename);
     void loadFontSet();
     void initVideo();
 
@@ -242,7 +241,8 @@ private:
 public:
     Chip8(const std::string& romFilename);
 
-    void reset();
+    void reset(bool reloadFile=true);
+    void loadFile(const std::string& romFilename);
 
     void emulateCycle();
     void renderFrameBuffer();

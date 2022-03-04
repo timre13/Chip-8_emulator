@@ -59,6 +59,7 @@
 #define SHORTCUT_KEYCODE_TOGGLE_HELP     SDLK_F1
 #define SHORTCUT_KEYCODE_TOGGLE_COMPAT_SHIFTYREG    SDLK_n
 #define SHORTCUT_KEYCODE_TOGGLE_COMPAT_INCI         SDLK_m
+#define SHORTCUT_KEYCODE_GOTO_FILE_DLG   SDLK_TAB
 
 //--------------------------------- Misc. --------------------------------------
 

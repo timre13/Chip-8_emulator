@@ -21,14 +21,14 @@ int main(int argc, char** argv)
     Logger::setLoggerVerbosity(Logger::LoggerVerbosity::Verbose);
 
     std::string romFilename{};
+    FileChooser fileChooser{{"./roms", "../submodules/chip8asm/tests", "."}, {"ch8", "asm"}};
     if (argc > 1)
     {
         romFilename = argv[1];
     }
     else
     {
-        FileChooser fileChooser{{"./roms", "../submodules/chip8asm/tests", "."}, {"ch8", "asm"}};
-        romFilename = fileChooser.get();
+        romFilename = fileChooser.show();
         // If the user canceled the file selection or the file list is empty, quit.
         if (romFilename.size() == 0)
             return 0;
@@ -145,6 +145,15 @@ int main(int argc, char** argv)
                         case SHORTCUT_KEYCODE_TOGGLE_COMPAT_INCI:
                             chip8.toggleCompatIncIAfterRegFillLoad();
                             chip8.setInfoMessage(Chip8::InfoMessageValue::ToggleCompatIncIAfterRegFillLoad);
+                            break;
+
+                        case SHORTCUT_KEYCODE_GOTO_FILE_DLG:
+                            const std::string path = fileChooser.show();
+                            if (!path.empty())
+                            {
+                                chip8.reset(false);
+                                chip8.loadFile(path);
+                            }
                             break;
                     }
                     break;

@@ -10,6 +10,8 @@ static void getFileList(
         const std::vector<std::string>& dirs, const std::vector<std::string>& exts,
         std::vector<std::string>* output)
 {
+    output->clear();
+
     std::vector<std::string> filePaths;
     for (const auto& dir : dirs)
     {
@@ -62,10 +64,10 @@ static void getFileList(
     std::sort(output->begin(), output->end());
 }
 
-void FileChooser::drawTitle() const
+void FileChooser::drawTitle(bool loading) const
 {
     SDL_Surface *textSurface = TTF_RenderText_Solid(m_font,
-            (m_isLoading ? "Loading..." : (m_fileList.empty() ? "Empty file list" : m_title)).c_str(),
+            (loading ? "Loading..." : (m_fileList.empty() ? "Empty file list" : m_title)).c_str(),
             {255, 255, 255, 255});
 
     SDL_Rect sourceRect{0, 0, textSurface->w, textSurface->h};
@@ -79,11 +81,11 @@ void FileChooser::drawTitle() const
     SDL_FreeSurface(textSurface);
 }
 
-void FileChooser::drawFileList() const
+void FileChooser::drawFileList(int chosenFileI) const
 {
     for (int i{}; i < static_cast<int>(m_fileList.size()); ++i)
     {
-        int y{500 - m_chosenFileI * 30 + i * 30};
+        int y{500 - chosenFileI * 30 + i * 30};
 
         if (y  < 1000 && y > 0)
         {
@@ -138,70 +140,83 @@ FileChooser::FileChooser(const std::vector<std::string>& directories, const std:
         std::exit(2);
     }
 
-    drawTitle();
-    SDL_RenderPresent(m_renderer);
-    getFileList(directories, extensions, &m_fileList);
-    m_isLoading = false;
+    SDL_HideWindow(m_window);
+    
+    m_dirs = directories;
+    m_exts = extensions;
+}
 
-    bool isRunning{true};
-    while (isRunning)
+std::string FileChooser::show()
+{
+    SDL_ShowWindow(m_window);
+    drawTitle(true);
+    SDL_RenderPresent(m_renderer);
+    getFileList(m_dirs, m_exts, &m_fileList);
+
+    int chosenFileI{};
+
+    while (true)
     {
         SDL_Event event;
-
         while (SDL_PollEvent(&event))
         {
             switch (event.type)
             {
             case SDL_QUIT:
-                m_chosenFileI = -1;
-                isRunning = false;
+                SDL_HideWindow(m_window);
+                return "";
+
+            case SDL_KEYUP:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_ESCAPE:
+                case SDLK_q:
+                    SDL_HideWindow(m_window);
+                    return "";
+                }
                 break;
 
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym)
                 {
-                    case SDLK_ESCAPE:
-                    case SDLK_q:
-                        m_chosenFileI = -1;
-                        isRunning = false;
-                        break;
+                case SDLK_DOWN:
+                case SDLK_j:
+                    chosenFileI += 1;
 
-                    case SDLK_DOWN:
-                    case SDLK_j:
-                        m_chosenFileI += 1;
+                    if (chosenFileI > static_cast<int>(m_fileList.size())-1)
+                        chosenFileI = m_fileList.size()-1;
+                    break;
 
-                        if (m_chosenFileI > static_cast<int>(m_fileList.size())-1)
-                            m_chosenFileI = m_fileList.size()-1;
-                        break;
+                case SDLK_UP:
+                case SDLK_k:
+                    chosenFileI -= 1;
 
-                    case SDLK_UP:
-                    case SDLK_k:
-                        m_chosenFileI -= 1;
+                    if (chosenFileI < 0)
+                        chosenFileI = 0;
+                    break;
 
-                        if (m_chosenFileI < 0)
-                            m_chosenFileI = 0;
-                        break;
-
-                    case SDLK_RETURN:
-                        isRunning = false;
-                        return;
+                case SDLK_RETURN:
+                    SDL_HideWindow(m_window);
+                    if (m_fileList.empty())
+                        return "";
+                    return m_fileList.at(chosenFileI);
                 }
                 break;
 
             case SDL_MOUSEWHEEL:
                 if (event.wheel.y < 0)
                 {
-                    m_chosenFileI += 1;
+                    chosenFileI += 1;
 
-                    if (m_chosenFileI > static_cast<int>(m_fileList.size())-1)
-                        m_chosenFileI = m_fileList.size()-1;
+                    if (chosenFileI > static_cast<int>(m_fileList.size())-1)
+                        chosenFileI = m_fileList.size()-1;
                 }
                 else if (event.wheel.y > 0)
                 {
-                    m_chosenFileI -= 1;
+                    chosenFileI -= 1;
 
-                    if (m_chosenFileI < 0)
-                        m_chosenFileI = 0;
+                    if (chosenFileI < 0)
+                        chosenFileI = 0;
                 }
                 break;
             }
@@ -211,23 +226,17 @@ FileChooser::FileChooser(const std::vector<std::string>& directories, const std:
         SDL_RenderClear(m_renderer);
 
         drawSelector();
-        drawTitle();
-        drawFileList();
+        drawTitle(false);
+        drawFileList(chosenFileI);
 
         SDL_RenderPresent(m_renderer);
 
-        SDL_Delay(20);
+        SDL_Delay(16);
     }
-}
 
-std::string FileChooser::get() const
-{
-    // Return an empty string if there are no files to choose from
-    // or the user closed the window
-    if (m_fileList.size() == 0 || m_chosenFileI == -1)
-        return "";
-
-    return m_fileList.at(m_chosenFileI);
+    // Not reached
+    SDL_HideWindow(m_window);
+    return "";
 }
 
 FileChooser::~FileChooser()

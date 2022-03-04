@@ -22,24 +22,24 @@ inline std::string strToLower(const std::string& str)
 class FileChooser final
 {
 private:
+    std::vector<std::string> m_dirs;
+    std::vector<std::string> m_exts;
     std::vector<std::string> m_fileList;
-    int m_chosenFileI{};
 
     SDL_Window* m_window{};
     SDL_Renderer* m_renderer{};
     TTF_Font* m_font{};
 
-    bool m_isLoading{true};
     std::string m_title{FILECHOOSER_TITLE};
 
-    void drawFileList() const;
-    void drawTitle() const;
+    void drawFileList(int chosenFileI) const;
+    void drawTitle(bool loading) const;
     void drawSelector() const;
 
 public:
     FileChooser(const std::vector<std::string>& directories, const std::vector<std::string>& extensions={"*"});
 
-    std::string get() const;
+    std::string show();
 
     ~FileChooser();
 };
