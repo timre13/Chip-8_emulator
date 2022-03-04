@@ -153,5 +153,16 @@ Exits the emulator.
 ##### Backspace
 Dumps the memory, the registers, the framebuffer and the stack to the terminal.
 
+##### N
+Toggle compatibility option:<br>
+Set register `X` to register `Y` shifted instead of `X` in case of shift opcodes.<br>
+Space invaders is known to only work with this option set to `False`.<br>
+Defaults to `True`.
+
+##### M
+Toggle compatibility option:<br>
+Increment `I` register after register load/save in case of `FX55` and `FX66` opcodes.<br>
+Defaults to `True`.
+
 ## License
 Licensed under the MIT license.
